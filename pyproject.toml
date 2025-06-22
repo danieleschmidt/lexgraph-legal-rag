@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lexgraph_legal_rag"
+version = "0.0.0"
+requires-python = ">=3.8"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["lexgraph_legal_rag"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
