@@ -1,27 +1,20 @@
 {
-  "install-pytest-and-add-it-to-requirements": {
-    "description": "Install pytest and add it to requirements",
-    "tests": [
-      "pytest runs without errors"
-    ]
+  "implement-scaffolding-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another": {
+    "test_file": "tests/test_implement-scaffolding-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another.py",
+    "cases": {
+      "success": "Asserts the primary success case."
+    }
   },
-  "create-initial-tests-directory-with-sample-test": {
-    "description": "Create initial tests directory with sample test",
-    "tests": [
-      "pytest runs without errors"
-    ]
+  "add-core-logic-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another": {
+    "test_file": "tests/test_add-core-logic-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another.py",
+    "cases": {
+      "success": "Asserts the primary success case."
+    }
   },
-  "configure-pytest-via-pyproject-or-ini": {
-    "description": "Configure pytest via pyproject or ini",
-    "tests": [
-      "pytest runs without errors"
-    ]
-  },
-  "set-up-github-actions-workflow-for-running-tests": {
-    "description": "Set up GitHub Actions workflow for running tests",
-    "tests": [
-      "pytest runs without errors"
-    ]
+  "write-unit-tests-covering-success-and-failure-paths-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another": {
+    "test_file": "tests/test_write-unit-tests-covering-success-and-failure-paths-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another.py",
+    "cases": {
+      "success": "Asserts the primary success case."
+    }
   }
 }
-
