@@ -1,18 +1,24 @@
 {
-  "implement-scaffolding-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another": {
-    "test_file": "tests/test_implement-scaffolding-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another.py",
+  "evaluate-embedding-models-for-legal-text": {
+    "test_file": "tests/test_evaluate-embedding-models-for-legal-text.py",
     "cases": {
       "success": "Asserts the primary success case."
     }
   },
-  "add-core-logic-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another": {
-    "test_file": "tests/test_add-core-logic-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another.py",
+  "integrate-embeddings-into-document-pipeline": {
+    "test_file": "tests/test_integrate-embeddings-into-document-pipeline.py",
     "cases": {
       "success": "Asserts the primary success case."
     }
   },
-  "write-unit-tests-covering-success-and-failure-paths-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another": {
-    "test_file": "tests/test_write-unit-tests-covering-success-and-failure-paths-for-multi-agent-architecture-recursive-graph-of-specialized-tools-retriever-summarizer-clause-explainer-that-intelligently-decide-when-to-call-one-another.py",
+  "implement-nearest-neighbor-retrieval-using-embeddings": {
+    "test_file": "tests/test_implement-nearest-neighbor-retrieval-using-embeddings.py",
+    "cases": {
+      "success": "Asserts the primary success case."
+    }
+  },
+  "expose-semantic-search-api-endpoint": {
+    "test_file": "tests/test_expose-semantic-search-api-endpoint.py",
     "cases": {
       "success": "Asserts the primary success case."
     }
