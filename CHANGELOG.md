@@ -1,7 +1,4 @@
-# Release v0.0.1
+# Release v0.1.0
 
 ## ✨ Features
-- No new features.
-
-## 🐛 Fixes
-- No bug fixes.
+- feat(search): add semantic search pipeline
