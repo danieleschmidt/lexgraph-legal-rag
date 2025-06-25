@@ -11,7 +11,10 @@ def test_success_and_failure_paths():
     graph = MultiAgentGraph()
     # success path: explanation requested
     result_explain = graph.run("please explain arbitration clause")
-    assert result_explain == "explanation of summary of retrieved: please explain arbitration clause"
+    assert (
+        result_explain
+        == "explanation of summary of retrieved: please explain arbitration clause"
+    )
     # failure path: only summarization
     result_summary = graph.run("summarize arbitration clause")
     assert result_summary == "summary of retrieved: summarize arbitration clause"

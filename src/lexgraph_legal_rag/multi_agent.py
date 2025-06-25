@@ -78,12 +78,12 @@ class CitationAgent:
 class RouterAgent:
     """Basic router to determine which agents to invoke."""
 
+    explain_keywords: tuple[str, ...] = ("explain", "meaning", "interpret")
+
     def decide(self, query: str) -> bool:
         """Return ``True`` if an explanation is requested."""
         lowered = query.lower()
-        return any(
-            keyword in lowered for keyword in ("explain", "meaning", "interpret")
-        )
+        return any(keyword in lowered for keyword in self.explain_keywords)
 
 
 @dataclass
