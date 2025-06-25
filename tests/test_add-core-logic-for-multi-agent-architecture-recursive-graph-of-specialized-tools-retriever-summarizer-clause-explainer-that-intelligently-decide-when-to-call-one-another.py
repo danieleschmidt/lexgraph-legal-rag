@@ -8,6 +8,9 @@ from lexgraph_legal_rag.multi_agent import MultiAgentGraph
 def test_router_executes_correct_path():
     graph = MultiAgentGraph()
     result_explain = graph.run("please explain this clause")
-    assert result_explain == "explanation of summary of retrieved: please explain this clause"
+    assert (
+        result_explain
+        == "explanation of summary of retrieved: please explain this clause"
+    )
     result_summary = graph.run("summarize this clause")
     assert result_summary == "summary of retrieved: summarize this clause"

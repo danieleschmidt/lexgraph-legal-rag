@@ -1,9 +1,11 @@
-# Sprint Board: **Semantic Search**: Advanced retrieval using legal-domain embeddings
+# Sprint Board: Add semantic versioning on API endpoints
+
 
 ## Backlog
+
 | Task | Owner | Priority | Status |
 | --- | --- | --- | --- |
-| Evaluate embedding models for legal text | @agent | P1 | Ready |
-| Integrate embeddings into document pipeline | @agent | P1 | Ready |
-| Implement nearest neighbor retrieval using embeddings | @agent | P1 | Ready |
-| Expose semantic search API endpoint | @agent | P1 | Ready |
+| Design API versioning strategy and endpoints | @agent | P1 | Done |
+| Update FastAPI routes with version prefixes | @agent | P1 | Done |
+| Handle requests lacking explicit version | @agent | P1 | Done |
+| Document API versioning in usage guide | @agent | P1 | Done |

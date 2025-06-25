@@ -1,24 +1,24 @@
 {
-  "evaluate-embedding-models-for-legal-text": {
-    "test_file": "tests/test_evaluate-embedding-models-for-legal-text.py",
+  "define-versioning-scheme": {
+    "test_file": "tests/test_define-versioning-scheme.py",
     "cases": {
       "success": "Asserts the primary success case."
     }
   },
-  "integrate-embeddings-into-document-pipeline": {
-    "test_file": "tests/test_integrate-embeddings-into-document-pipeline.py",
+  "implement-versioned-routing": {
+    "test_file": "tests/test_implement-versioned-routing.py",
     "cases": {
       "success": "Asserts the primary success case."
     }
   },
-  "implement-nearest-neighbor-retrieval-using-embeddings": {
-    "test_file": "tests/test_implement-nearest-neighbor-retrieval-using-embeddings.py",
+  "default-version-fallback": {
+    "test_file": "tests/test_default-version-fallback.py",
     "cases": {
       "success": "Asserts the primary success case."
     }
   },
-  "expose-semantic-search-api-endpoint": {
-    "test_file": "tests/test_expose-semantic-search-api-endpoint.py",
+  "document-versioning-guidelines": {
+    "test_file": "tests/test_document-versioning-guidelines.py",
     "cases": {
       "success": "Asserts the primary success case."
     }
