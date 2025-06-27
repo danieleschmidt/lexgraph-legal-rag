@@ -19,10 +19,10 @@ cd lexgraph-legal-rag
 pip install -r requirements.txt
 
 # Index your legal document corpus
-python ingest.py --docs ./corpus --index-type legal
+python ingest.py --docs ./corpus --index index.bin
 
 # Run interactive query session
-python run_agent.py --query "What constitutes indemnification in commercial contracts?"
+python run_agent.py --query "What constitutes indemnification in commercial contracts?" --index index.bin
 
 # Start web interface
 streamlit run app.py
