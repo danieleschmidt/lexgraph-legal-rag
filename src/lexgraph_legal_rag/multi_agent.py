@@ -3,17 +3,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Iterable, Iterator, Protocol
+from typing import TYPE_CHECKING, AsyncIterator, Iterable, Iterator, Protocol
+
+import logging
 
 if TYPE_CHECKING:  # pragma: no cover - used for type checking only
     from .document_pipeline import LegalDocumentPipeline
     from .models import LegalDocument
 
 
+logger = logging.getLogger(__name__)
+
+
 class Agent(Protocol):
     """Protocol for all agents."""
 
-    def run(self, text: str) -> str:
+    async def run(self, text: str) -> str:
         """Process input text and return output text."""
 
 
@@ -21,8 +26,9 @@ class Agent(Protocol):
 class RetrieverAgent:
     """Stub retriever agent."""
 
-    def run(self, query: str) -> str:
+    async def run(self, query: str) -> str:
         """Retrieve relevant text for a query."""
+        logger.debug("RetrieverAgent running with query: %s", query)
         return f"retrieved: {query}"
 
 
@@ -30,8 +36,9 @@ class RetrieverAgent:
 class SummarizerAgent:
     """Stub summarizer agent."""
 
-    def run(self, text: str) -> str:
+    async def run(self, text: str) -> str:
         """Return a summary of the given text."""
+        logger.debug("SummarizerAgent summarizing text: %s", text)
         return f"summary of {text}"
 
 
@@ -39,8 +46,9 @@ class SummarizerAgent:
 class ClauseExplainerAgent:
     """Stub clause explainer agent."""
 
-    def run(self, summary: str) -> str:
+    async def run(self, summary: str) -> str:
         """Return an explanation of the summarized clause."""
+        logger.debug("ClauseExplainerAgent explaining summary: %s", summary)
         return f"explanation of {summary}"
 
 
@@ -96,30 +104,49 @@ class MultiAgentGraph:
     router: RouterAgent = field(default_factory=RouterAgent)
     max_depth: int = 1
 
-    def run(self, query: str) -> str:
+    async def run(self, query: str) -> str:
         """Run the pipeline for the given query."""
         if not isinstance(query, str):
             raise TypeError("query must be a string")
+        logger.info("Running agent graph for query: %s", query)
+        return await self._run_recursive(query, depth=0)
 
-        return self._run_recursive(query, depth=0)
-
-    def _run_recursive(self, query: str, depth: int) -> str:
+    async def _run_recursive(self, query: str, depth: int) -> str:
         """Execute agents recursively up to ``max_depth``."""
-        retrieved = self.retriever.run(query)
-        summary = self.summarizer.run(retrieved)
+        logger.debug("Depth %d: retrieving", depth)
+        retrieved = await self.retriever.run(query)
+        logger.debug("Depth %d: summarizing", depth)
+        summary = await self.summarizer.run(retrieved)
         if self.router.decide(query) and depth < self.max_depth:
-            explanation = self.clause_explainer.run(summary)
+            logger.debug("Depth %d: explaining", depth)
+            explanation = await self.clause_explainer.run(summary)
             if depth + 1 < self.max_depth and self.router.decide(explanation):
-                return self._run_recursive(explanation, depth + 1)
+                return await self._run_recursive(explanation, depth + 1)
             return explanation
         return summary
 
-    def run_with_citations(
+    async def run_with_citations(
         self, query: str, pipeline: "LegalDocumentPipeline", top_k: int = 3
-    ) -> Iterator[str]:
+    ) -> AsyncIterator[str]:
         """Run the pipeline and yield an answer with citations."""
-        answer = self.run(query)
+        logger.info("Running agent graph with citations for query: %s", query)
+        answer = await self.run(query)
         results = pipeline.search(query, top_k=top_k)
         docs = [doc for doc, _ in results]
         citation_agent = CitationAgent()
-        yield from citation_agent.stream(answer, docs, query)
+        for chunk in citation_agent.stream(answer, docs, query):
+            yield chunk
+
+    def run_with_citations_sync(
+        self, query: str, pipeline: "LegalDocumentPipeline", top_k: int = 3
+    ) -> Iterator[str]:
+        """Synchronous wrapper around :meth:`run_with_citations`."""
+        import asyncio
+
+        async def gather() -> list[str]:
+            return [
+                chunk async for chunk in self.run_with_citations(query, pipeline, top_k)
+            ]
+
+        for chunk in asyncio.run(gather()):
+            yield chunk

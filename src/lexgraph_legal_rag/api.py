@@ -1,12 +1,27 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, FastAPI
+from pydantic import BaseModel
+
+import logging
 
 from .sample import add as add_numbers
 
 """FastAPI application with basic versioned routing."""
 
 SUPPORTED_VERSIONS = ("v1",)
+
+
+logger = logging.getLogger(__name__)
+
+
+class PingResponse(BaseModel):
+    version: str
+    ping: str
+
+
+class AddResponse(BaseModel):
+    result: int
 
 
 def create_api(version: str = SUPPORTED_VERSIONS[0]) -> FastAPI:
@@ -17,14 +32,16 @@ def create_api(version: str = SUPPORTED_VERSIONS[0]) -> FastAPI:
     app = FastAPI(title="LexGraph Legal RAG", version=version)
 
     def register_routes(router: APIRouter) -> None:
-        @router.get("/ping")
-        async def ping() -> dict[str, str]:
-            return {"version": version, "ping": "pong"}
+        @router.get("/ping", response_model=PingResponse)
+        async def ping() -> PingResponse:
+            logger.debug("/ping called")
+            return PingResponse(version=version, ping="pong")
 
-        @router.get("/add")
-        async def add(a: int, b: int) -> dict[str, int]:
+        @router.get("/add", response_model=AddResponse)
+        async def add(a: int, b: int) -> AddResponse:
             """Return the sum of two integers."""
-            return {"result": add_numbers(a, b)}
+            logger.debug("/add called with a=%s b=%s", a, b)
+            return AddResponse(result=add_numbers(a, b))
 
     versioned_router = APIRouter(prefix=f"/{version}")
     register_routes(versioned_router)
