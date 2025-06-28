@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Iterable, List, Tuple, Any
+from pathlib import Path
+
+import joblib
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -47,6 +50,18 @@ class EmbeddingIndex:
         texts = [d.text for d in self._docs]
         self._matrix = self.model.fit_transform(texts)
 
+    def save(self, path: str | Path) -> None:
+        """Persist the embedding index to ``path``."""
+        data = (self.model.vectorizer, self._matrix, self._docs)
+        joblib.dump(data, Path(path))
+
+    def load(self, path: str | Path) -> None:
+        """Load a previously saved embedding index from ``path``."""
+        vect, matrix, docs = joblib.load(Path(path))
+        self.model.vectorizer = vect
+        self._matrix = matrix
+        self._docs = docs
+
     def search(self, query: str, top_k: int = 5) -> List[Tuple[LegalDocument, float]]:
         if self._matrix is None:
             return []
@@ -71,3 +86,11 @@ class SemanticSearchPipeline:
     def search(self, query: str, top_k: int = 5) -> List[Tuple[LegalDocument, float]]:
         """Return documents most relevant to ``query`` according to embedding similarity."""
         return self.index.search(query, top_k=top_k)
+
+    def save(self, path: str | Path) -> None:
+        """Persist the embedding index to ``path``."""
+        self.index.save(path)
+
+    def load(self, path: str | Path) -> None:
+        """Load a previously saved embedding index from ``path``."""
+        self.index.load(path)

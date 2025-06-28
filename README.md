@@ -19,7 +19,8 @@ cd lexgraph-legal-rag
 pip install -r requirements.txt
 
 # Index your legal document corpus
-python ingest.py --docs ./corpus --index index.bin
+# (add `--semantic` to enable semantic search)
+python ingest.py --docs ./corpus --index index.bin --semantic
 
 # Run interactive query session
 python run_agent.py --query "What constitutes indemnification in commercial contracts?" --index index.bin
@@ -27,6 +28,10 @@ python run_agent.py --query "What constitutes indemnification in commercial cont
 # Start web interface
 streamlit run app.py
 ```
+
+The pipeline saves both vector and semantic indices. The semantic index
+is stored alongside the main index with a `.sem` suffix and loads
+automatically when present.
 
 ## Architecture
 
