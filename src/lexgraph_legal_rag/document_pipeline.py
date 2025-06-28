@@ -74,11 +74,21 @@ class LegalDocumentPipeline:
     def save_index(self, path: str | Path) -> None:
         """Persist the current vector index to ``path``."""
         self.index.save(path)
+        if self.semantic is not None:
+            base = Path(path)
+            semantic_path = base.with_suffix(base.suffix + ".sem")
+            self.semantic.save(semantic_path)
         logger.info("Pipeline index saved to %s", path)
 
     def load_index(self, path: str | Path) -> None:
         """Load a previously saved vector index from ``path``."""
         self.index.load(path)
+        base = Path(path)
+        semantic_path = base.with_suffix(base.suffix + ".sem")
+        if semantic_path.exists():
+            if self.semantic is None:
+                self.semantic = SemanticSearchPipeline()
+            self.semantic.load(semantic_path)
         logger.info("Pipeline index loaded from %s", path)
 
     def ingest_folder(self, folder: str | Path, pattern: str = "*.txt") -> None:
