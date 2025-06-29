@@ -1,16 +1,14 @@
 """LexGraph Legal Retrieval Augmented Generation."""
 
-import logging
-
 from .multi_agent import CitationAgent, MultiAgentGraph, RouterAgent
 from .document_pipeline import LegalDocumentPipeline
 from .semantic_search import EmbeddingModel, SemanticSearchPipeline
+from .faiss_index import FaissVectorIndex
 from .context_reasoning import ContextAwareReasoner
 from .models import LegalDocument
+from .logging_config import configure_logging
 
-logging.basicConfig(level=logging.INFO)
-
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 __all__ = [
     "MultiAgentGraph",
@@ -20,5 +18,7 @@ __all__ = [
     "LegalDocumentPipeline",
     "EmbeddingModel",
     "SemanticSearchPipeline",
+    "FaissVectorIndex",
     "ContextAwareReasoner",
+    "configure_logging",
 ]

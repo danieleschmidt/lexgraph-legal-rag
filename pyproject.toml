@@ -4,13 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lexgraph_legal_rag"
-version = "0.1.0"
+version = "1.0.0"
 requires-python = ">=3.8"
 dependencies = [
-    "scikit-learn",
-    "fastapi>=0.115",
-    "httpx",
-    "joblib",
+    "scikit-learn==1.7.0",
+    "fastapi==0.115.14",
+    "httpx==0.28.1",
+    "faiss-cpu==1.11.0",
+    "structlog==24.1.0",
+    "prometheus-client==0.20.0",
+    "streamlit==1.33.0",
 ]
 
 [tool.setuptools]
@@ -18,6 +21,6 @@ package-dir = {"" = "src"}
 packages = ["lexgraph_legal_rag"]
 
 [tool.pytest.ini_options]
-addopts = "-ra"
+addopts = "-ra --cov=lexgraph_legal_rag --cov-branch --cov-fail-under=80"
 testpaths = ["tests"]
 pythonpath = ["src"]
