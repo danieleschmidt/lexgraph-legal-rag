@@ -14,7 +14,7 @@ from .sample import add as add_numbers
 
 SUPPORTED_VERSIONS = ("v1",)
 
-API_KEY_ENV = "API_KEY"
+API_KEY_ENV = "API_KEY"  # pragma: allowlist secret
 RATE_LIMIT = 60  # requests per minute
 
 
@@ -22,6 +22,7 @@ def verify_api_key(x_api_key: str = Header(...), api_key: str | None = None) -> 
     if api_key is None:
         api_key = os.environ.get(API_KEY_ENV)
     if not api_key or x_api_key != api_key:
+        logger.warning("invalid API key attempt", extra={"provided": x_api_key})
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key"
         )
@@ -32,6 +33,7 @@ def enforce_rate_limit(request_times: deque[float], limit: int = RATE_LIMIT) -> 
     while request_times and now - request_times[0] > 60:
         request_times.popleft()
     if len(request_times) >= limit:
+        logger.warning("rate limit exceeded")
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Rate limit exceeded",

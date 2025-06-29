@@ -23,6 +23,9 @@ pip install -r requirements.txt
 # Set the API key required for the service
 export API_KEY=mysecret
 
+# Install pre-commit hooks
+pre-commit install && pre-commit run --all-files
+
 # Index your legal document corpus
 # (add `--semantic` to enable semantic search)
 python ingest.py --docs ./corpus --index index.bin --semantic --metrics-port 8001

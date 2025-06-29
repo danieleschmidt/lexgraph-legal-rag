@@ -6,4 +6,6 @@ faiss-cpu==1.11.0
 structlog==24.1.0
 prometheus-client==0.20.0
 pytest-cov==5.0.0
+pytest-xdist==3.5.0
+pre-commit==3.7.1
 streamlit==1.33.0
