@@ -6,11 +6,13 @@ from dataclasses import dataclass, field
 from typing import Iterable, List, Tuple, Any
 from pathlib import Path
 
-import joblib
+import json
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
+from .metrics import SEARCH_LATENCY, SEARCH_REQUESTS
 
 from .models import LegalDocument
 
@@ -51,26 +53,36 @@ class EmbeddingIndex:
         self._matrix = self.model.fit_transform(texts)
 
     def save(self, path: str | Path) -> None:
-        """Persist the embedding index to ``path``."""
-        data = (self.model.vectorizer, self._matrix, self._docs)
-        joblib.dump(data, Path(path))
+        """Persist the embedding index to ``path`` using JSON."""
+        docs = [
+            {"id": d.id, "text": d.text, "metadata": d.metadata} for d in self._docs
+        ]
+        with Path(path).open("w", encoding="utf-8") as fh:
+            json.dump(docs, fh)
 
     def load(self, path: str | Path) -> None:
         """Load a previously saved embedding index from ``path``."""
-        vect, matrix, docs = joblib.load(Path(path))
-        self.model.vectorizer = vect
-        self._matrix = matrix
-        self._docs = docs
+        with Path(path).open("r", encoding="utf-8") as fh:
+            docs_data = json.load(fh)
+        docs = [LegalDocument(**d) for d in docs_data]
+        self.model.vectorizer = TfidfVectorizer(stop_words="english")
+        self._matrix = None
+        self._docs = []
+        if docs:
+            self.add(docs)
 
     def search(self, query: str, top_k: int = 5) -> List[Tuple[LegalDocument, float]]:
         if self._matrix is None:
             return []
-        query_vec = self.model.transform([query])
-        scores = cosine_similarity(query_vec, self._matrix).ravel()
-        if not len(scores):
-            return []
-        indices = np.argsort(scores)[::-1][:top_k]
-        return [(self._docs[i], float(scores[i])) for i in indices]
+        with SEARCH_LATENCY.time():
+            query_vec = self.model.transform([query])
+            scores = cosine_similarity(query_vec, self._matrix).ravel()
+            if not len(scores):
+                return []
+            indices = np.argsort(scores)[::-1][:top_k]
+            results = [(self._docs[i], float(scores[i])) for i in indices]
+        SEARCH_REQUESTS.inc()
+        return results
 
 
 @dataclass

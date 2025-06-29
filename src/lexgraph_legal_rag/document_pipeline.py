@@ -7,9 +7,11 @@ from typing import Any, Iterable, List, Tuple
 
 import logging
 
-import joblib
+import json
 
 from sklearn.feature_extraction.text import TfidfVectorizer
+
+from .metrics import SEARCH_LATENCY, SEARCH_REQUESTS
 
 from .models import LegalDocument
 from .semantic_search import SemanticSearchPipeline
@@ -38,28 +40,37 @@ class VectorIndex:
         logger.debug("Indexed %d documents", len(docs))
 
     def save(self, path: str | Path) -> None:
-        """Persist the vector index to ``path``."""
-        data = (self._vectorizer, self._matrix, self._docs)
-        joblib.dump(data, Path(path))
+        """Persist the vector index to ``path`` using JSON serialization."""
+        docs = [
+            {"id": d.id, "text": d.text, "metadata": d.metadata} for d in self._docs
+        ]
+        with Path(path).open("w", encoding="utf-8") as fh:
+            json.dump(docs, fh)
         logger.info("Saved vector index to %s", path)
 
     def load(self, path: str | Path) -> None:
         """Load a previously saved vector index from ``path``."""
-        vect, matrix, docs = joblib.load(Path(path))
-        self._vectorizer = vect
-        self._matrix = matrix
-        self._docs = docs
+        with Path(path).open("r", encoding="utf-8") as fh:
+            docs_data = json.load(fh)
+        docs = [LegalDocument(**d) for d in docs_data]
+        self._vectorizer = TfidfVectorizer()
+        self._matrix = None
+        self._docs = []
+        if docs:
+            self.add(docs)
         logger.info("Loaded vector index from %s", path)
 
     def search(self, query: str, top_k: int = 5) -> List[Tuple[LegalDocument, float]]:
         if self._matrix is None:
             return []
-        query_vec = self._vectorizer.transform([query])
-        scores = (self._matrix @ query_vec.T).toarray().ravel()
-        if not len(scores):
-            return []
-        indices = scores.argsort()[::-1][:top_k]
-        results = [(self._docs[i], float(scores[i])) for i in indices]
+        with SEARCH_LATENCY.time():
+            query_vec = self._vectorizer.transform([query])
+            scores = (self._matrix @ query_vec.T).toarray().ravel()
+            if not len(scores):
+                return []
+            indices = scores.argsort()[::-1][:top_k]
+            results = [(self._docs[i], float(scores[i])) for i in indices]
+        SEARCH_REQUESTS.inc()
         logger.debug("Search for '%s' returned %d results", query, len(results))
         return results
 
