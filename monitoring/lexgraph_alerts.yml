@@ -1,0 +1,32 @@
+groups:
+- name: lexgraph_alerts
+  interval: 30s
+  rules:
+  - alert: HighErrorRate
+    expr: rate(http_requests_errors_total[5m]) / rate(http_requests_total[5m]) > 0.05
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: Error rate is above 5.0% for more than 5m
+      summary: 'High error rate detected: {{ $value | humanizePercentage }}'
+      runbook_url: https://docs.company.com/runbooks/high-error-rate
+  - alert: HighLatency
+    expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+      > 2.0
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      description: 95th percentile latency is above 2.0s for more than 5m
+      summary: 'High latency detected: {{ $value }}s'
+      runbook_url: https://docs.company.com/runbooks/high-latency
+  - alert: ServiceDown
+    expr: up{job="lexgraph-api"} == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: Service has been down for more than 1m
+      summary: LexGraph service is down
+      runbook_url: https://docs.company.com/runbooks/service-down

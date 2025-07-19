@@ -43,6 +43,21 @@ INDEX_POOL_IN_USE = Gauge(
     "index_pool_in_use", "Number of indices currently in use"
 )
 
+# HTTP metrics for alerting
+HTTP_REQUESTS_TOTAL = Counter(
+    "http_requests_total", "Total number of HTTP requests",
+    ["method", "endpoint", "status"]
+)
+HTTP_REQUESTS_ERRORS_TOTAL = Counter(
+    "http_requests_errors_total", "Total number of HTTP error responses",
+    ["method", "endpoint", "status"]
+)
+HTTP_REQUEST_DURATION_SECONDS = Histogram(
+    "http_request_duration_seconds", "HTTP request duration in seconds",
+    ["method", "endpoint", "status"],
+    buckets=[0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]
+)
+
 # API metrics
 API_KEY_ROTATIONS = Counter(
     "api_key_rotations_total", "Total number of API key rotations"
@@ -120,3 +135,38 @@ def record_api_key_rotation() -> None:
 def record_rate_limit_exceeded() -> None:
     """Record a rate limit violation."""
     RATE_LIMIT_EXCEEDED.inc()
+
+
+def record_http_request(method: str, endpoint: str, status_code: int, duration: float) -> None:
+    """Record HTTP request metrics for alerting."""
+    status_str = str(status_code)
+    
+    # Record total requests
+    HTTP_REQUESTS_TOTAL.labels(method=method, endpoint=endpoint, status=status_str).inc()
+    
+    # Record request duration
+    HTTP_REQUEST_DURATION_SECONDS.labels(method=method, endpoint=endpoint, status=status_str).observe(duration)
+    
+    # Record errors (4xx and 5xx responses)
+    if status_code >= 400:
+        HTTP_REQUESTS_ERRORS_TOTAL.labels(method=method, endpoint=endpoint, status=status_str).inc()
+
+
+def record_http_error(method: str, endpoint: str, status_code: int, error_type: str = "server_error") -> None:
+    """Record HTTP error for alerting purposes."""
+    status_str = str(status_code)
+    HTTP_REQUESTS_ERRORS_TOTAL.labels(method=method, endpoint=endpoint, status=status_str).inc()
+
+
+def get_error_rate_metrics() -> dict:
+    """Get current error rate metrics for monitoring."""
+    try:
+        # Get current metric values - this is a simplified version
+        # In production, you'd query Prometheus directly
+        return {
+            "total_requests": "Available via Prometheus /metrics endpoint",
+            "total_errors": "Available via Prometheus /metrics endpoint", 
+            "error_rate": "Calculate via Prometheus: rate(http_requests_errors_total[5m]) / rate(http_requests_total[5m])"
+        }
+    except Exception as e:
+        return {"error": f"Failed to get metrics: {e}"}

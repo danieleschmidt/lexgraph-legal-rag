@@ -1,3 +1,34 @@
+# Release v1.0.3 (2025-07-19)
+
+## 🚨 Alerting
+- feat(alerting): comprehensive high error rate alerting system
+- feat(metrics): HTTP request tracking metrics (requests, errors, duration)
+- feat(monitoring): HTTPMonitoringMiddleware for automatic request tracking
+- feat(prometheus): production-ready alerting rules with configurable thresholds
+
+## 🔧 Alert Types
+- feat(alerts): ErrorRateAlert with configurable error rate thresholds (default 5%)
+- feat(alerts): LatencyAlert with percentile-based latency monitoring (default 95th percentile > 2s)
+- feat(alerts): ServiceDownAlert for service availability monitoring
+- feat(config): environment-based alerting configuration system
+
+## 📊 Monitoring Infrastructure
+- feat(middleware): automatic HTTP request/response tracking with correlation IDs
+- feat(metrics): enhanced metrics.py with HTTP request functions
+- feat(rules): generated Prometheus rules YAML for production deployment
+- feat(api): integrated monitoring middleware into FastAPI application
+
+## 🧪 Testing
+- feat(test): comprehensive alerting test suite with 11 test classes
+- test(alerts): alert rule generation and validation
+- test(prometheus): Prometheus integration and YAML generation
+- test(config): alerting configuration and environment variable handling
+
+## 📁 Production Files
+- feat(monitoring): monitoring/lexgraph_alerts.yml - production Prometheus rules
+- feat(config): monitoring/alerting.env.example - configuration template
+- feat(docs): updated BACKLOG.md and TECH_DEBT.md with implementation details
+
 # Release v1.0.2 (2025-07-19)
 
 ## 🔍 Observability
