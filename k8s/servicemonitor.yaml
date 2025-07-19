@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: lexgraph-api-metrics
+  namespace: lexgraph
+  labels:
+    app.kubernetes.io/name: lexgraph-legal-rag
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lexgraph-legal-rag
+      app.kubernetes.io/component: api
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+    scheme: http
+    tlsConfig:
+      insecureSkipVerify: true
