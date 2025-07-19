@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, FastAPI, Depends, Header, HTTPException, status
+from fastapi import APIRouter, FastAPI, Depends, Header, HTTPException, status, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.utils import get_openapi
 import os
 import time
 from collections import deque
-from pydantic import BaseModel
-from typing import Dict, Any
+from pydantic import BaseModel, Field
+from typing import Dict, Any, Optional
 
 import logging
 
@@ -13,10 +16,20 @@ from .sample import add as add_numbers
 from .config import validate_environment
 from .auth import get_key_manager
 from .metrics import update_memory_metrics, update_cache_metrics, update_index_metrics
+from .versioning import (
+    VersionNegotiationMiddleware, 
+    get_request_version, 
+    require_version,
+    version_deprecated,
+    VersionedResponse,
+    create_version_info_endpoint,
+    SUPPORTED_VERSIONS as VERSIONING_SUPPORTED_VERSIONS,
+    DEFAULT_VERSION
+)
 
 """FastAPI application with API key auth and rate limiting."""
 
-SUPPORTED_VERSIONS = ("v1",)
+SUPPORTED_VERSIONS = VERSIONING_SUPPORTED_VERSIONS
 
 API_KEY_ENV = "API_KEY"  # pragma: allowlist secret
 RATE_LIMIT = 60  # requests per minute
@@ -61,42 +74,142 @@ logger = logging.getLogger(__name__)
 
 
 class PingResponse(BaseModel):
-    version: str
-    ping: str
+    """Response model for ping endpoint."""
+    version: str = Field(..., description="API version", example="v1")
+    ping: str = Field(..., description="Ping response", example="pong")
+    timestamp: Optional[float] = Field(None, description="Response timestamp")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "version": "v1",
+                "ping": "pong",
+                "timestamp": 1234567890.123
+            }
+        }
 
 
 class AddResponse(BaseModel):
-    result: int
+    """Response model for addition endpoint."""
+    result: int = Field(..., description="Sum of the two integers", example=42)
+
+    class Config:
+        schema_extra = {
+            "example": {"result": 42}
+        }
 
 
 class HealthResponse(BaseModel):
-    status: str
-    version: str
-    checks: Dict[str, Any]
+    """Response model for health check endpoint."""
+    status: str = Field(..., description="Health status", example="healthy")
+    version: str = Field(..., description="API version", example="v1")
+    checks: Dict[str, Any] = Field(..., description="Individual health checks")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "status": "healthy",
+                "version": "v1",
+                "checks": {
+                    "api_key_configured": True,
+                    "supported_versions": ["v1", "v2"],
+                    "timestamp": 1234567890.123
+                }
+            }
+        }
 
 
 class ReadinessResponse(BaseModel):
-    ready: bool
-    checks: Dict[str, Any]
+    """Response model for readiness check endpoint."""
+    ready: bool = Field(..., description="Whether the service is ready to handle requests")
+    checks: Dict[str, Any] = Field(..., description="Readiness check results")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "ready": True,
+                "checks": {
+                    "api_key": {"status": "pass"},
+                    "memory": {"status": "pass", "usage_percent": 45.2},
+                    "cache": {"status": "pass", "hit_rate": 0.85},
+                    "external_services": {"status": "pass", "message": "All services available"}
+                }
+            }
+        }
 
 
 class KeyRotationRequest(BaseModel):
-    new_primary_key: str
+    """Request model for API key rotation."""
+    new_primary_key: str = Field(
+        ..., 
+        min_length=8,
+        description="New API key to add to the active set",
+        example="new-secure-api-key-123"
+    )
+
+    class Config:
+        schema_extra = {
+            "example": {"new_primary_key": "new-secure-api-key-123"}
+        }
 
 
 class KeyRevocationRequest(BaseModel):
-    api_key: str
+    """Request model for API key revocation."""
+    api_key: str = Field(
+        ...,
+        min_length=8, 
+        description="API key to revoke",
+        example="old-api-key-to-revoke"
+    )
+
+    class Config:
+        schema_extra = {
+            "example": {"api_key": "old-api-key-to-revoke"}
+        }
 
 
 class KeyManagementResponse(BaseModel):
-    message: str
-    rotation_info: Dict[str, Any]
+    """Response model for key management operations."""
+    message: str = Field(..., description="Operation result message")
+    rotation_info: Dict[str, Any] = Field(..., description="Key rotation statistics")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "message": "Key rotation completed successfully",
+                "rotation_info": {
+                    "active_keys": 3,
+                    "revoked_keys": 1,
+                    "last_rotation": 1234567890.123,
+                    "days_since_rotation": 0.001
+                }
+            }
+        }
+
+
+class VersionInfo(BaseModel):
+    """Response model for version information."""
+    supported_versions: list[str] = Field(..., description="List of supported API versions")
+    default_version: str = Field(..., description="Default API version")
+    latest_version: str = Field(..., description="Latest API version")
+    current_version: str = Field(..., description="Currently negotiated version")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "supported_versions": ["v1", "v2"],
+                "default_version": "v1",
+                "latest_version": "v2",
+                "current_version": "v1"
+            }
+        }
 
 
 def create_api(
     version: str = SUPPORTED_VERSIONS[0],
     api_key: str | None = None,
     rate_limit: int = RATE_LIMIT,
+    enable_docs: bool = True,
 ) -> FastAPI:
     """Return a FastAPI app configured for the given API ``version``."""
     if version not in SUPPORTED_VERSIONS:
@@ -107,26 +220,115 @@ def create_api(
     if not api_key:
         raise ValueError("API key not provided")
 
-    app = FastAPI(title="LexGraph Legal RAG", version=version)
+    # Custom OpenAPI configuration
+    app = FastAPI(
+        title="LexGraph Legal RAG API",
+        version=version,
+        description="""
+        Multi-agent retrieval system for legal document analysis with cited passages.
+        
+        ## Features
+        
+        * **Multi-Agent Architecture**: Specialized tools for retrieval, summarization, and explanation
+        * **Legal Document Search**: Vector-based and semantic search capabilities
+        * **Citation Generation**: Precise source references for all responses
+        * **Performance Monitoring**: Built-in metrics and health checks
+        * **API Key Management**: Secure authentication with key rotation support
+        
+        ## Version Negotiation
+        
+        This API supports multiple versions. You can specify the desired version using:
+        
+        * **Accept Header**: `Accept: application/vnd.lexgraph.v1+json`
+        * **URL Path**: `/v1/endpoint` or `/v2/endpoint`
+        * **Query Parameter**: `?version=v1`
+        * **Custom Header**: `X-API-Version: v1`
+        
+        ## Authentication
+        
+        All endpoints require an API key passed in the `X-API-Key` header.
+        """,
+        contact={
+            "name": "LexGraph Legal RAG Support",
+            "email": "support@lexgraph.com",
+        },
+        license_info={
+            "name": "MIT License",
+            "url": "https://opensource.org/licenses/MIT",
+        },
+        docs_url="/docs" if enable_docs else None,
+        redoc_url="/redoc" if enable_docs else None,
+        openapi_url="/openapi.json" if enable_docs else None,
+    )
+
+    # Add CORS middleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],  # Configure appropriately for production
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    
+    # Add version negotiation middleware
+    app.add_middleware(VersionNegotiationMiddleware, default_version=DEFAULT_VERSION)
 
     request_times: deque[float] = deque()
 
     def register_routes(router: APIRouter) -> None:
-        @router.get("/ping", response_model=PingResponse)
-        async def ping() -> PingResponse:
+        @router.get("/ping", response_model=PingResponse, tags=["Health"])
+        async def ping(request: Request) -> PingResponse:
+            """Basic connectivity test endpoint."""
             logger.debug("/ping called")
-            return PingResponse(version=version, ping="pong")
+            current_version = get_request_version(request)
+            response_data = {
+                "version": str(current_version),
+                "ping": "pong",
+                "timestamp": time.time()
+            }
+            return PingResponse(**response_data)
 
-        @router.get("/add", response_model=AddResponse)
-        async def add(a: int, b: int) -> AddResponse:
-            """Return the sum of two integers."""
+        @router.get("/add", response_model=AddResponse, tags=["Utilities"])
+        async def add(
+            request: Request,
+            a: int = Field(..., description="First integer", example=5),
+            b: int = Field(..., description="Second integer", example=7)
+        ) -> AddResponse:
+            """Add two integers together.
+            
+            This is a simple arithmetic endpoint for testing API functionality.
+            """
             logger.debug("/add called with a=%s b=%s", a, b)
-            return AddResponse(result=add_numbers(a, b))
+            current_version = get_request_version(request)
+            result = add_numbers(a, b)
+            
+            # Version-specific response formatting
+            response_data = {"result": result}
+            formatted_response = VersionedResponse.format_response(response_data, current_version)
+            
+            if current_version.version == "v2":
+                return formatted_response
+            else:
+                return AddResponse(result=result)
+        
+        @router.get("/version", response_model=VersionInfo, tags=["API Info"])
+        async def version_info(request: Request) -> VersionInfo:
+            """Get API version information and negotiation details."""
+            current_version = get_request_version(request)
+            version_endpoint = create_version_info_endpoint()
+            info = await version_endpoint()
+            
+            return VersionInfo(
+                supported_versions=info["supported_versions"],
+                default_version=info["default_version"],
+                latest_version=info["latest_version"],
+                current_version=str(current_version)
+            )
 
     def register_health_routes(app: FastAPI) -> None:
         """Register health check endpoints without authentication."""
         
-        @app.get("/health", response_model=HealthResponse)
+        @app.get("/health", response_model=HealthResponse, tags=["Health"])
         async def health() -> HealthResponse:
             """Health check endpoint - returns basic service status."""
             checks = {
@@ -140,7 +342,7 @@ def create_api(
                 checks=checks
             )
 
-        @app.get("/ready", response_model=ReadinessResponse)
+        @app.get("/ready", response_model=ReadinessResponse, tags=["Health"])
         async def readiness() -> ReadinessResponse:
             """Readiness check endpoint - checks if service is ready to handle requests."""
             checks = {}
@@ -187,7 +389,7 @@ def create_api(
     def register_admin_routes(router: APIRouter) -> None:
         """Register admin endpoints for key management."""
         
-        @router.post("/admin/rotate-keys", response_model=KeyManagementResponse)
+        @router.post("/admin/rotate-keys", response_model=KeyManagementResponse, tags=["Admin"])
         async def rotate_keys(request: KeyRotationRequest) -> KeyManagementResponse:
             """Rotate API keys - requires existing valid API key."""
             key_manager = get_key_manager()
@@ -200,7 +402,7 @@ def create_api(
                 rotation_info=rotation_info
             )
 
-        @router.post("/admin/revoke-key", response_model=KeyManagementResponse)
+        @router.post("/admin/revoke-key", response_model=KeyManagementResponse, tags=["Admin"])
         async def revoke_key(request: KeyRevocationRequest) -> KeyManagementResponse:
             """Revoke a specific API key."""
             key_manager = get_key_manager()
@@ -213,7 +415,7 @@ def create_api(
                 rotation_info=rotation_info
             )
 
-        @router.get("/admin/key-status", response_model=KeyManagementResponse)
+        @router.get("/admin/key-status", response_model=KeyManagementResponse, tags=["Admin"])
         async def key_status() -> KeyManagementResponse:
             """Get current key management status."""
             key_manager = get_key_manager()
@@ -224,7 +426,7 @@ def create_api(
                 rotation_info=rotation_info
             )
 
-        @router.get("/admin/metrics")
+        @router.get("/admin/metrics", tags=["Admin", "Monitoring"])
         async def get_metrics_summary() -> Dict[str, Any]:
             """Get summary of application metrics and performance statistics."""
             # Update metrics before returning
@@ -280,5 +482,72 @@ def create_api(
 
     # Validate configuration at startup
     validate_environment()
+
+    # Custom OpenAPI schema
+    def custom_openapi():
+        if app.openapi_schema:
+            return app.openapi_schema
+        
+        openapi_schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+        )
+        
+        # Add security schemes
+        openapi_schema["components"]["securitySchemes"] = {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-API-Key",
+                "description": "API key for authentication"
+            },
+            "VersionHeader": {
+                "type": "apiKey",
+                "in": "header", 
+                "name": "X-API-Version",
+                "description": "API version specification"
+            }
+        }
+        
+        # Add global security requirement
+        openapi_schema["security"] = [{"ApiKeyAuth": []}]
+        
+        # Add tags
+        openapi_schema["tags"] = [
+            {
+                "name": "Health",
+                "description": "Health check and status endpoints"
+            },
+            {
+                "name": "Utilities", 
+                "description": "Utility endpoints for testing"
+            },
+            {
+                "name": "API Info",
+                "description": "API version and information endpoints"
+            },
+            {
+                "name": "Admin",
+                "description": "Administrative endpoints for key management"
+            },
+            {
+                "name": "Monitoring",
+                "description": "Monitoring and metrics endpoints"
+            }
+        ]
+        
+        # Add version info to schema
+        openapi_schema["info"]["x-api-versions"] = {
+            "supported": list(SUPPORTED_VERSIONS),
+            "default": DEFAULT_VERSION,
+            "latest": version
+        }
+        
+        app.openapi_schema = openapi_schema
+        return app.openapi_schema
+
+    app.openapi = custom_openapi
 
     return app
