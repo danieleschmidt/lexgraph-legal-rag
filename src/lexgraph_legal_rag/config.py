@@ -63,12 +63,20 @@ class Config:
         }
 
 
-def validate_environment() -> Config:
+def validate_environment(allow_test_mode: bool = False) -> Config:
     """Validate environment configuration at startup."""
     try:
         config = Config()
         config.validate_startup()
         return config
     except ConfigurationError as e:
-        logger.error(f"Configuration validation failed: {e}")
-        sys.exit(1)
+        if allow_test_mode:
+            logger.warning(f"Configuration validation failed in test mode: {e}")
+            # Create a test config with dummy values
+            os.environ.setdefault("API_KEY", "test_api_key_12345")
+            config = Config()
+            config.validate_startup()
+            return config
+        else:
+            logger.error(f"Configuration validation failed: {e}")
+            sys.exit(1)
