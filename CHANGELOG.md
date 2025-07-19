@@ -1,3 +1,22 @@
+# Release v1.0.2 (2025-07-19)
+
+## 🔍 Observability
+- feat(tracing): comprehensive correlation ID support for request tracing
+- feat(middleware): CorrelationIdMiddleware for automatic ID generation and propagation
+- feat(logging): structured logging integration with automatic correlation ID inclusion
+- feat(api): HTTP header-based correlation ID propagation (X-Correlation-ID)
+
+## 🧪 Testing  
+- feat(test): correlation ID test suite with 95% coverage (11 tests)
+- test(middleware): comprehensive middleware functionality testing
+- test(context): correlation ID context management validation
+- test(logging): structured logging integration verification
+
+## 📈 Production Readiness
+- feat(observability): end-to-end request tracing capability
+- feat(debugging): enhanced incident response through correlation IDs
+- feat(monitoring): correlation ID integration with all API endpoints
+
 # Release v1.0.1 (2025-07-19)
 
 ## 🧪 Testing
