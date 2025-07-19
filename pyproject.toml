@@ -12,7 +12,7 @@ dependencies = [
     "httpx==0.28.1",
     "faiss-cpu==1.11.0",
     "structlog==24.1.0",
-    "prometheus-client==0.20.0",
+    "prometheus-client==0.22.1",
     "streamlit==1.33.0",
     "psutil>=5.9.0",
 ]
