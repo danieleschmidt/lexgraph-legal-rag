@@ -27,6 +27,7 @@ from .versioning import (
     DEFAULT_VERSION
 )
 from .correlation import CorrelationIdMiddleware, get_correlation_id
+from .monitoring import HTTPMonitoringMiddleware
 
 """FastAPI application with API key auth and rate limiting."""
 
@@ -271,6 +272,9 @@ def create_api(
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    
+    # Add HTTP monitoring middleware for alerting
+    app.add_middleware(HTTPMonitoringMiddleware)
     
     # Add correlation ID middleware for request tracing
     app.add_middleware(CorrelationIdMiddleware)
