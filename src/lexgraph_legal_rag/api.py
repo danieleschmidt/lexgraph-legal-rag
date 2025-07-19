@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, FastAPI, Depends, Header, HTTPException, status, Request
+from fastapi import APIRouter, FastAPI, Depends, Header, HTTPException, status, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from fastapi.openapi.utils import get_openapi
@@ -210,6 +210,7 @@ def create_api(
     api_key: str | None = None,
     rate_limit: int = RATE_LIMIT,
     enable_docs: bool = True,
+    test_mode: bool = False,
 ) -> FastAPI:
     """Return a FastAPI app configured for the given API ``version``."""
     if version not in SUPPORTED_VERSIONS:
@@ -291,8 +292,8 @@ def create_api(
         @router.get("/add", response_model=AddResponse, tags=["Utilities"])
         async def add(
             request: Request,
-            a: int = Field(..., description="First integer", example=5),
-            b: int = Field(..., description="Second integer", example=7)
+            a: int = Query(..., description="First integer", example=5),
+            b: int = Query(..., description="Second integer", example=7)
         ) -> AddResponse:
             """Add two integers together.
             
@@ -481,7 +482,7 @@ def create_api(
         app.include_router(default_router)
 
     # Validate configuration at startup
-    validate_environment()
+    validate_environment(allow_test_mode=test_mode)
 
     # Custom OpenAPI schema
     def custom_openapi():

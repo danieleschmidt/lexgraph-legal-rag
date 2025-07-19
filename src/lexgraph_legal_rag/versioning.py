@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from typing import Optional, Tuple
 from fastapi import Request, HTTPException, status
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import Response
 import logging
 
