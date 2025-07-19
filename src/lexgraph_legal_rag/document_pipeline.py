@@ -15,6 +15,7 @@ from .metrics import SEARCH_LATENCY, SEARCH_REQUESTS
 
 from .models import LegalDocument
 from .semantic_search import SemanticSearchPipeline
+from .cache import get_query_cache
 
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,13 @@ class VectorIndex:
         self._docs.extend(docs)
         texts = [d.text for d in self._docs]
         self._matrix = self._vectorizer.fit_transform(texts)
-        logger.debug("Indexed %d documents", len(docs))
+        
+        # Invalidate cache when index is updated
+        from .cache import get_query_cache
+        cache = get_query_cache()
+        cache.invalidate_pattern("*")  # Invalidate all cached results
+        
+        logger.debug("Indexed %d documents and invalidated cache", len(docs))
 
     def save(self, path: str | Path) -> None:
         """Persist the vector index to ``path`` using JSON serialization."""
@@ -63,15 +70,59 @@ class VectorIndex:
     def search(self, query: str, top_k: int = 5) -> List[Tuple[LegalDocument, float]]:
         if self._matrix is None:
             return []
-        with SEARCH_LATENCY.time():
+        with SEARCH_LATENCY.labels(search_type="vector").time():
             query_vec = self._vectorizer.transform([query])
+            # Use more efficient dot product calculation
             scores = (self._matrix @ query_vec.T).toarray().ravel()
             if not len(scores):
                 return []
-            indices = scores.argsort()[::-1][:top_k]
+            
+            # Use partial sort for better performance when top_k << total_docs
+            if top_k < len(scores) // 10:  # Use partial sort when top_k is much smaller
+                import numpy as np
+                # Get indices of top_k largest elements without full sort
+                indices = np.argpartition(scores, -top_k)[-top_k:]
+                # Sort only the top_k elements
+                indices = indices[np.argsort(scores[indices])[::-1]]
+            else:
+                indices = scores.argsort()[::-1][:top_k]
+            
             results = [(self._docs[i], float(scores[i])) for i in indices]
-        SEARCH_REQUESTS.inc()
+        SEARCH_REQUESTS.labels(search_type="vector").inc()
         logger.debug("Search for '%s' returned %d results", query, len(results))
+        return results
+    
+    def batch_search(self, queries: List[str], top_k: int = 5) -> List[List[Tuple[LegalDocument, float]]]:
+        """Perform batch search for multiple queries efficiently."""
+        if self._matrix is None:
+            return [[] for _ in queries]
+        
+        results = []
+        with SEARCH_LATENCY.labels(search_type="vector_batch").time():
+            # Transform all queries at once for better efficiency
+            query_vecs = self._vectorizer.transform(queries)
+            # Compute all similarity scores in one batch operation
+            all_scores = (self._matrix @ query_vecs.T).toarray()
+            
+            for i, query in enumerate(queries):
+                scores = all_scores[:, i]
+                if not len(scores):
+                    results.append([])
+                    continue
+                
+                # Use partial sort optimization
+                if top_k < len(scores) // 10:
+                    import numpy as np
+                    indices = np.argpartition(scores, -top_k)[-top_k:]
+                    indices = indices[np.argsort(scores[indices])[::-1]]
+                else:
+                    indices = scores.argsort()[::-1][:top_k]
+                
+                query_results = [(self._docs[idx], float(scores[idx])) for idx in indices]
+                results.append(query_results)
+        
+        SEARCH_REQUESTS.labels(search_type="vector_batch").inc(len(queries))
+        logger.debug("Batch search for %d queries completed", len(queries))
         return results
 
 
@@ -117,8 +168,39 @@ class LegalDocumentPipeline:
             logger.info("Ingested %d documents from %s", len(docs), folder)
 
     def search(
-        self, query: str, top_k: int = 5, semantic: bool | None = None
+        self, query: str, top_k: int = 5, semantic: bool | None = None, use_cache: bool = True
     ) -> List[Tuple[LegalDocument, float]]:
-        if (semantic or semantic is None and self.semantic) and self.semantic:
-            return self.semantic.search(query, top_k=top_k)
-        return self.index.search(query, top_k=top_k)
+        # Determine which search method to use
+        use_semantic = (semantic or semantic is None and self.semantic) and self.semantic
+        
+        # Try cache first if enabled
+        if use_cache:
+            cache = get_query_cache()
+            cached_results = cache.get(
+                query=query,
+                top_k=top_k,
+                semantic=use_semantic,
+            )
+            if cached_results is not None:
+                logger.debug("Retrieved search results from cache")
+                SEARCH_REQUESTS.labels(search_type="cached").inc()
+                return cached_results
+        
+        # Perform actual search
+        search_type = "semantic" if use_semantic else "vector"
+        if use_semantic:
+            results = self.semantic.search(query, top_k=top_k)
+        else:
+            results = self.index.search(query, top_k=top_k)
+        
+        # Cache results if caching is enabled
+        if use_cache and results:
+            cache = get_query_cache()
+            cache.put(
+                query=query,
+                top_k=top_k,
+                results=results,
+                semantic=use_semantic,
+            )
+        
+        return results

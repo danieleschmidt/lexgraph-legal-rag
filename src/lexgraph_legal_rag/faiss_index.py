@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Tuple, Optional
 from pathlib import Path
+import threading
+import time
 
 import json
 
@@ -17,13 +19,70 @@ from .metrics import SEARCH_LATENCY, SEARCH_REQUESTS
 from .models import LegalDocument
 
 
+class FaissIndexPool:
+    """Thread-safe pool of FAISS indices for concurrent access."""
+    
+    def __init__(self, max_pool_size: int = 3) -> None:
+        self.max_pool_size = max_pool_size
+        self._available_indices: List[faiss.IndexFlatIP] = []
+        self._in_use_indices: set = set()
+        self._lock = threading.Lock()
+        self._master_index: Optional[faiss.IndexFlatIP] = None
+        self._last_sync_time = 0.0
+    
+    def set_master_index(self, index: faiss.IndexFlatIP) -> None:
+        """Set the master index that will be cloned for the pool."""
+        with self._lock:
+            self._master_index = index
+            # Clear existing pool
+            self._available_indices.clear()
+            self._in_use_indices.clear()
+            self._last_sync_time = time.time()
+    
+    def get_index(self) -> faiss.IndexFlatIP:
+        """Get an index from the pool, creating one if necessary."""
+        with self._lock:
+            if self._available_indices:
+                index = self._available_indices.pop()
+                self._in_use_indices.add(id(index))
+                return index
+            elif self._master_index is not None:
+                # Clone the master index for concurrent use
+                cloned = faiss.clone_index(self._master_index)
+                self._in_use_indices.add(id(cloned))
+                return cloned
+            else:
+                raise RuntimeError("No master index available for cloning")
+    
+    def return_index(self, index: faiss.IndexFlatIP) -> None:
+        """Return an index to the pool."""
+        with self._lock:
+            index_id = id(index)
+            if index_id in self._in_use_indices:
+                self._in_use_indices.remove(index_id)
+                if len(self._available_indices) < self.max_pool_size:
+                    self._available_indices.append(index)
+    
+    def get_pool_stats(self) -> dict:
+        """Get statistics about the index pool."""
+        with self._lock:
+            return {
+                "available": len(self._available_indices),
+                "in_use": len(self._in_use_indices),
+                "max_size": self.max_pool_size,
+                "has_master": self._master_index is not None,
+            }
+
+
 @dataclass
 class FaissVectorIndex:
-    """Vector index using FAISS for nearest-neighbor search."""
+    """Vector index using FAISS for nearest-neighbor search with connection pooling."""
 
     vectorizer: TfidfVectorizer = field(default_factory=TfidfVectorizer)
     index: faiss.IndexFlatIP | None = None
     _docs: List[LegalDocument] = field(default_factory=list)
+    _index_pool: FaissIndexPool = field(default_factory=lambda: FaissIndexPool(max_pool_size=3))
+    _use_pool: bool = True
 
     @property
     def documents(self) -> List[LegalDocument]:
@@ -41,10 +100,23 @@ class FaissVectorIndex:
             self.index = faiss.IndexFlatIP(vectors.shape[1])
         self.index.reset()
         self.index.add(vectors)
+        
+        # Update the connection pool with the new index
+        if self._use_pool:
+            self._index_pool.set_master_index(self.index)
 
     def search(self, query: str, top_k: int = 5) -> List[Tuple[LegalDocument, float]]:
         if self.index is None:
             return []
+        
+        # Use connection pool for concurrent access if enabled
+        if self._use_pool:
+            return self._search_with_pool(query, top_k)
+        else:
+            return self._search_direct(query, top_k)
+    
+    def _search_direct(self, query: str, top_k: int) -> List[Tuple[LegalDocument, float]]:
+        """Direct search without connection pooling."""
         with SEARCH_LATENCY.time():
             query_vec = self.vectorizer.transform([query]).astype(np.float32).toarray()
             scores, indices = self.index.search(query_vec, top_k)
@@ -55,6 +127,62 @@ class FaissVectorIndex:
                 results.append((self._docs[int(idx)], float(score)))
         SEARCH_REQUESTS.inc()
         return results
+    
+    def _search_with_pool(self, query: str, top_k: int) -> List[Tuple[LegalDocument, float]]:
+        """Search using connection pool for thread safety."""
+        pooled_index = None
+        try:
+            pooled_index = self._index_pool.get_index()
+            with SEARCH_LATENCY.time():
+                query_vec = self.vectorizer.transform([query]).astype(np.float32).toarray()
+                scores, indices = pooled_index.search(query_vec, top_k)
+                results: List[Tuple[LegalDocument, float]] = []
+                for idx, score in zip(indices.ravel(), scores.ravel()):
+                    if idx < 0:
+                        continue
+                    results.append((self._docs[int(idx)], float(score)))
+            SEARCH_REQUESTS.inc()
+            return results
+        finally:
+            if pooled_index is not None:
+                self._index_pool.return_index(pooled_index)
+    
+    def batch_search(self, queries: List[str], top_k: int = 5) -> List[List[Tuple[LegalDocument, float]]]:
+        """Perform batch search for multiple queries efficiently."""
+        if self.index is None:
+            return [[] for _ in queries]
+        
+        pooled_index = None
+        try:
+            pooled_index = self._index_pool.get_index() if self._use_pool else self.index
+            results = []
+            
+            with SEARCH_LATENCY.time():
+                # Transform all queries at once
+                query_vecs = self.vectorizer.transform(queries).astype(np.float32).toarray()
+                
+                # Perform batch search
+                all_scores, all_indices = pooled_index.search(query_vecs, top_k)
+                
+                for i in range(len(queries)):
+                    query_results: List[Tuple[LegalDocument, float]] = []
+                    for idx, score in zip(all_indices[i], all_scores[i]):
+                        if idx < 0:
+                            continue
+                        query_results.append((self._docs[int(idx)], float(score)))
+                    results.append(query_results)
+            
+            SEARCH_REQUESTS.inc(len(queries))
+            return results
+        finally:
+            if pooled_index is not None and self._use_pool:
+                self._index_pool.return_index(pooled_index)
+    
+    def get_pool_stats(self) -> dict:
+        """Get connection pool statistics."""
+        if self._use_pool:
+            return self._index_pool.get_pool_stats()
+        return {"pool_enabled": False}
 
     def save(self, path: str | Path) -> None:
         if self.index is None:

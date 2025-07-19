@@ -4,10 +4,14 @@ from pathlib import Path
 from lexgraph_legal_rag.context_reasoning import ContextAwareReasoner
 from lexgraph_legal_rag.logging_config import configure_logging
 from lexgraph_legal_rag.metrics import start_metrics_server
+from lexgraph_legal_rag.config import validate_environment
 
 
 def main() -> None:
     configure_logging()
+    
+    # Validate configuration at startup
+    config = validate_environment()
     parser = argparse.ArgumentParser(description="Query the agent")
     parser.add_argument("--query", required=True, help="Query text")
     parser.add_argument("--index", default="index.bin", help="Path to load the index")
