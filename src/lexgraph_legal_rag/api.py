@@ -26,6 +26,7 @@ from .versioning import (
     SUPPORTED_VERSIONS as VERSIONING_SUPPORTED_VERSIONS,
     DEFAULT_VERSION
 )
+from .correlation import CorrelationIdMiddleware, get_correlation_id
 
 """FastAPI application with API key auth and rate limiting."""
 
@@ -271,6 +272,9 @@ def create_api(
         allow_headers=["*"],
     )
     
+    # Add correlation ID middleware for request tracing
+    app.add_middleware(CorrelationIdMiddleware)
+    
     # Add version negotiation middleware
     app.add_middleware(VersionNegotiationMiddleware, default_version=DEFAULT_VERSION)
 
@@ -280,13 +284,22 @@ def create_api(
         @router.get("/ping", response_model=PingResponse, tags=["Health"])
         async def ping(request: Request) -> PingResponse:
             """Basic connectivity test endpoint."""
-            logger.debug("/ping called")
+            correlation_id = get_correlation_id()
+            logger.info("/ping endpoint called", extra={
+                "endpoint": "/ping",
+                "correlation_id": correlation_id,
+                "method": "GET"
+            })
             current_version = get_request_version(request)
             response_data = {
                 "version": str(current_version),
                 "ping": "pong",
                 "timestamp": time.time()
             }
+            logger.debug("/ping response prepared", extra={
+                "response_version": str(current_version),
+                "correlation_id": correlation_id
+            })
             return PingResponse(**response_data)
 
         @router.get("/add", response_model=AddResponse, tags=["Utilities"])
