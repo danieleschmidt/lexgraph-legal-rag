@@ -6,7 +6,7 @@ from lexgraph_legal_rag.api import create_api
 
 def test_rate_limit_exceeded():
     """Test that rate limiting works correctly within the time window."""
-    app = create_api(api_key="k", rate_limit=2)
+    app = create_api(api_key="k", rate_limit=2, test_mode=True)
     client = TestClient(app)
     headers = {"X-API-Key": "k"}
     
@@ -25,7 +25,7 @@ def test_rate_limit_exceeded():
 
 def test_rate_limit_resets_after_window():
     """Test that rate limit resets after the time window."""
-    app = create_api(api_key="k", rate_limit=1)
+    app = create_api(api_key="k", rate_limit=1, test_mode=True)
     client = TestClient(app)
     headers = {"X-API-Key": "k"}
     
@@ -42,7 +42,7 @@ def test_rate_limit_resets_after_window():
     # For now, we'll test the rate limit logic without waiting
     
     # Create a new app instance to reset the rate limit state
-    app_new = create_api(api_key="k", rate_limit=1)
+    app_new = create_api(api_key="k", rate_limit=1, test_mode=True)
     client_new = TestClient(app_new)
     
     # This should succeed with the new app instance

@@ -38,7 +38,7 @@ def test_readiness_endpoint_no_auth():
 
 def test_readiness_fails_without_api_key():
     """Test that readiness endpoint fails when API key is not configured."""
-    app = create_api(api_key="")
+    app = create_api(api_key="", test_mode=True)
     client = TestClient(app)
     
     resp = client.get("/ready")

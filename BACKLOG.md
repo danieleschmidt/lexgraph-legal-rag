@@ -11,18 +11,24 @@
 
 ## High Priority (WSJF > 7)
 
-### 1. Achieve >90% Test Coverage (WSJF: 8.5) ✅ IN PROGRESS
-- **Business Value**: 8 (quality assurance, production confidence)
-- **Time Criticality**: 9 (KPI requirement)
-- **Risk Reduction**: 9 (bug prevention, regression safety)
-- **Job Size**: 3 (expand existing test suite)
-- **Status**: In Progress - Improved from 22% to 19.92% overall, with 4 modules at >85% coverage
+### 1. Fix Critical Test Failures & Achieve 80%+ Coverage (WSJF: 9.2) 🔥 URGENT
+- **Business Value**: 9 (production stability, CI/CD reliability)
+- **Time Criticality**: 10 (blocking deployment, 45 failing tests)
+- **Risk Reduction**: 10 (prevents production issues)
+- **Job Size**: 3 (targeted test fixes)
+- **Status**: Critical - 78% coverage with 45 failing tests out of 188
 - **Owner**: Terry (Autonomous Agent)
-- **Progress**:
-  - ✅ Fixed FastAPI import compatibility issues
-  - ✅ Created comprehensive test suites for models.py (100%), sample.py (100%), config.py (95%), metrics.py (88%)
-  - ✅ Implemented test-friendly configuration system
-  - 🔄 Next: Add tests for remaining modules (auth.py, cache.py, semantic_search.py, etc.)
+- **Critical Issues**:
+  - 🚨 API authentication tests failing (missing API key configuration)
+  - 🚨 Rate limiting tests failing (configuration issues)
+  - 🚨 Integration tests failing (dependency injection problems)
+  - 🚨 FAISS index tests failing (missing test data setup)
+  - 🚨 HTTP client tests failing (mocking issues)
+- **Immediate Actions Needed**:
+  - Fix API key configuration for test environment
+  - Resolve dependency injection for FastAPI tests
+  - Create proper test fixtures for external services
+  - Fix configuration loading in test mode
 
 ### 2. Implement Request Tracing with Correlation IDs (WSJF: 8.0) ✅ COMPLETED
 - **Business Value**: 7 (debugging, observability)
@@ -56,11 +62,21 @@
   - ✅ Generated Prometheus alerting rules YAML with production-ready defaults
   - ✅ Created configuration system with environment variable support
 
+### 4. Implement Multi-Agent Core Logic (WSJF: 7.5) 🔧 NEXT
+- **Business Value**: 9 (core product functionality)
+- **Time Criticality**: 6 (roadmap feature)
+- **Risk Reduction**: 8 (reduces technical debt)
+- **Job Size**: 3 (replace stub implementations)
+- **Status**: Not Started - Currently stub implementations
+- **Owner**: Unassigned
+- **Description**: Replace stub implementations in multi_agent.py with actual RAG functionality
+- **Blockers**: Need test coverage fixes first
+
 ---
 
 ## Medium Priority (WSJF 4-7)
 
-### 4. Optimize CI Pipeline to <15min (WSJF: 6.0)
+### 5. Optimize CI Pipeline to <15min (WSJF: 6.0)
 - **Business Value**: 6 (developer productivity)
 - **Time Criticality**: 7 (KPI requirement)
 - **Risk Reduction**: 5 (faster feedback)

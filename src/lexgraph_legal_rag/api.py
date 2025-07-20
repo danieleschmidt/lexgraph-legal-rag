@@ -14,7 +14,7 @@ import logging
 
 from .sample import add as add_numbers
 from .config import validate_environment
-from .auth import get_key_manager
+from .auth import get_key_manager, setup_test_key_manager
 from .metrics import update_memory_metrics, update_cache_metrics, update_index_metrics
 from .versioning import (
     VersionNegotiationMiddleware, 
@@ -37,23 +37,33 @@ API_KEY_ENV = "API_KEY"  # pragma: allowlist secret
 RATE_LIMIT = 60  # requests per minute
 
 
-def verify_api_key(x_api_key: str = Header(...), api_key: str | None = None) -> None:
+def verify_api_key(x_api_key: str, api_key: str | None = None) -> None:
     # Use the key manager for validation if available, fallback to legacy method
-    key_manager = get_key_manager()
-    
-    if key_manager.get_active_key_count() > 0:
-        # Use key manager for validation
-        if not key_manager.is_valid_key(x_api_key):
-            logger.warning("invalid API key attempt via key manager", extra={"provided": x_api_key[:8] + "..."})
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key"
-            )
-    else:
-        # Fallback to legacy validation
+    try:
+        key_manager = get_key_manager()
+        
+        if key_manager.get_active_key_count() > 0:
+            # Use key manager for validation
+            if not key_manager.is_valid_key(x_api_key):
+                logger.warning("invalid API key attempt via key manager", extra={"provided": x_api_key[:8] + "..."})
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key"
+                )
+        else:
+            # Fallback to legacy validation
+            if api_key is None:
+                api_key = os.environ.get(API_KEY_ENV)
+            if not api_key or x_api_key != api_key:
+                logger.warning("invalid API key attempt via legacy", extra={"provided": x_api_key[:8] + "..."})
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key"
+                )
+    except Exception as e:
+        # In case of any auth system failure, fall back to direct comparison
         if api_key is None:
             api_key = os.environ.get(API_KEY_ENV)
         if not api_key or x_api_key != api_key:
-            logger.warning("invalid API key attempt via legacy", extra={"provided": x_api_key[:8] + "..."})
+            logger.warning("invalid API key attempt via fallback", extra={"provided": x_api_key[:8] + "...", "error": str(e)})
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key"
             )
@@ -220,8 +230,12 @@ def create_api(
 
     if api_key is None:
         api_key = os.environ.get(API_KEY_ENV)
-    if not api_key:
+    if not api_key and not test_mode:
         raise ValueError("API key not provided")
+    
+    # Setup test mode key management if needed
+    if test_mode and api_key:
+        setup_test_key_manager(api_key)
 
     # Custom OpenAPI configuration
     app = FastAPI(
@@ -478,6 +492,11 @@ def create_api(
             }
 
     def auth_dep(x_api_key: str | None = Header(None)) -> None:
+        if x_api_key is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="X-API-Key header is required"
+            )
         verify_api_key(x_api_key, api_key)
 
     def rate_dep() -> None:

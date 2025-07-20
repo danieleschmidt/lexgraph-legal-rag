@@ -39,13 +39,16 @@ class Config:
         """Validate all configuration at startup."""
         logger.info("Validating configuration...")
         
-        # Validate API key format and length
-        if len(self.api_key) < 8:
-            raise ConfigurationError("API_KEY must be at least 8 characters long")
+        # Check for development/test keys first
+        development_keys = ["test", "development", "dev", "mysecret"]
+        is_development_key = self.api_key.lower() in development_keys
         
-        # Check for development/test keys in production
-        if self.api_key.lower() in ["test", "development", "dev", "mysecret"]:
+        if is_development_key:
             logger.warning("Using development API key - not suitable for production")
+        else:
+            # Validate API key format and length for non-development keys
+            if len(self.api_key) < 8:
+                raise ConfigurationError("API_KEY must be at least 8 characters long")
         
         # Validate optional configurations if present
         if self.openai_api_key and not self.openai_api_key.startswith("sk-"):

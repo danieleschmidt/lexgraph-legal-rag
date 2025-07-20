@@ -100,6 +100,14 @@ def get_key_manager() -> APIKeyManager:
         return _key_manager
 
 
+def setup_test_key_manager(test_api_key: str) -> None:
+    """Setup key manager for testing with a specific API key."""
+    global _key_manager
+    with _manager_lock:
+        _key_manager = APIKeyManager()
+        _key_manager.add_key(test_api_key)
+
+
 def validate_api_key(api_key: str) -> bool:
     """Validate an API key using the global key manager."""
     return get_key_manager().is_valid_key(api_key)

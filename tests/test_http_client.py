@@ -73,7 +73,9 @@ async def test_circuit_breaker_half_open_transition():
 @pytest.mark.asyncio
 async def test_retry_config_calculation():
     """Test retry delay calculation."""
-    client = ResilientHTTPClient()
+    # Create client with jitter disabled for deterministic testing
+    retry_config = RetryConfig(jitter=False)
+    client = ResilientHTTPClient(retry_config=retry_config)
     
     # Test exponential backoff
     assert client._calculate_delay(0) == 1.0  # initial_delay
@@ -81,7 +83,7 @@ async def test_retry_config_calculation():
     assert client._calculate_delay(2) == 4.0  # initial_delay * base^2
     
     # Test max delay cap
-    config = RetryConfig(initial_delay=10.0, max_delay=15.0, exponential_base=2.0)
+    config = RetryConfig(initial_delay=10.0, max_delay=15.0, exponential_base=2.0, jitter=False)
     client.retry_config = config
     assert client._calculate_delay(1) == 15.0  # Capped at max_delay
 

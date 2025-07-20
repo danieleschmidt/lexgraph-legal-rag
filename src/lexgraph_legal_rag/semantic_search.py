@@ -74,14 +74,14 @@ class EmbeddingIndex:
     def search(self, query: str, top_k: int = 5) -> List[Tuple[LegalDocument, float]]:
         if self._matrix is None:
             return []
-        with SEARCH_LATENCY.time():
+        with SEARCH_LATENCY.labels(search_type="semantic").time():
             query_vec = self.model.transform([query])
             scores = cosine_similarity(query_vec, self._matrix).ravel()
             if not len(scores):
                 return []
             indices = np.argsort(scores)[::-1][:top_k]
             results = [(self._docs[i], float(scores[i])) for i in indices]
-        SEARCH_REQUESTS.inc()
+        SEARCH_REQUESTS.labels(search_type="semantic").inc()
         return results
 
 
