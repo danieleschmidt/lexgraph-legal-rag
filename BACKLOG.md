@@ -116,7 +116,39 @@
 
 ## Medium Priority (WSJF 4-7)
 
-### 5. Optimize CI Pipeline to <15min (WSJF: 6.0)
+### 5. Fix Test Failures & Increase Coverage to 80%+ (WSJF: 8.5) ✅ MAJOR PROGRESS
+- **Business Value**: 9 (production stability, deployment confidence)
+- **Time Criticality**: 8 (blocking deployments, was 27% coverage)
+- **Risk Reduction**: 9 (prevents production issues, enables safe refactoring)
+- **Job Size**: 3 (fix failing tests, add missing coverage)
+- **Status**: Major Progress - Key modules significantly improved
+- **Owner**: Terry (Autonomous Agent)
+- **Progress**:
+  - ✅ Fixed missing psutil dependency for health endpoints
+  - ✅ Fixed multi-agent test to match improved implementation  
+  - ✅ Added comprehensive multi-agent tests: 16% → 78% coverage (+62%)
+  - ✅ 228 tests collected, health endpoints now passing
+  - 🔄 Need to focus on API module (0% coverage) and document pipeline (16% coverage)
+
+### 6. Implement Performance Optimization - Batch Processing (WSJF: 7.3)
+- **Business Value**: 8 (query performance, user experience)
+- **Time Criticality**: 6 (performance KPI)
+- **Risk Reduction**: 8 (scalability bottleneck)
+- **Job Size**: 3 (implement batch search in multi-agent flow)
+- **Status**: Not Started
+- **Owner**: Unassigned
+- **Details**: N+1 query pattern in multi-agent pipeline. Batch methods exist but unused.
+
+### 7. Security Hardening - CORS & API Key Management (WSJF: 6.7)
+- **Business Value**: 7 (security compliance)
+- **Time Criticality**: 8 (security vulnerability)
+- **Risk Reduction**: 9 (prevent security breaches)
+- **Job Size**: 4 (CORS config, key encryption, per-key rate limiting)
+- **Status**: Not Started
+- **Owner**: Unassigned
+- **Details**: CORS allows all origins, API keys in plaintext, no per-key rate limiting
+
+### 8. Optimize CI Pipeline to <15min (WSJF: 6.0)
 - **Business Value**: 6 (developer productivity)
 - **Time Criticality**: 7 (KPI requirement)
 - **Risk Reduction**: 5 (faster feedback)
@@ -124,7 +156,7 @@
 - **Status**: Not Started
 - **Owner**: Unassigned
 
-### 5. Security Dependency Scanning (WSJF: 5.8)
+### 9. Security Dependency Scanning (WSJF: 5.8)
 - **Business Value**: 6 (compliance, security)
 - **Time Criticality**: 6 (security best practice)
 - **Risk Reduction**: 9 (vulnerability prevention)
@@ -132,7 +164,16 @@
 - **Status**: Not Started
 - **Owner**: Unassigned
 
-### 6. Add Circuit Breaker Pattern Documentation (WSJF: 4.5)
+### 10. Add Enhanced Monitoring & Observability (WSJF: 5.0)
+- **Business Value**: 6 (operational insights)
+- **Time Criticality**: 5 (monitoring gap)
+- **Risk Reduction**: 7 (proactive issue detection)
+- **Job Size**: 4 (OpenTelemetry, agent metrics, distributed tracing)
+- **Status**: Not Started
+- **Owner**: Unassigned
+- **Details**: Missing distributed tracing, agent-level metrics, error tracking
+
+### 11. Add Circuit Breaker Pattern Documentation (WSJF: 4.5)
 - **Business Value**: 4 (maintainability)
 - **Time Criticality**: 3 (nice to have)
 - **Risk Reduction**: 6 (operational knowledge)
@@ -178,5 +219,5 @@
 
 ---
 
-*Last Updated: 2025-07-19*
+*Last Updated: 2025-07-20*
 *Next Review: Weekly during iteration planning*
