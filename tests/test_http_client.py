@@ -3,6 +3,7 @@
 import pytest
 from unittest.mock import AsyncMock, patch
 import httpx
+import time
 
 from lexgraph_legal_rag.http_client import (
     ResilientHTTPClient,
@@ -140,6 +141,7 @@ async def test_circuit_breaker_blocks_requests():
     
     # Force circuit breaker to open state
     client.circuit_breaker._state = CircuitState.OPEN
+    client.circuit_breaker._last_failure_time = time.time()  # Set recent failure time
     
     with pytest.raises(httpx.HTTPStatusError, match="Circuit breaker is open"):
         await client.get("/test")
@@ -152,11 +154,9 @@ async def test_non_retryable_error():
         mock_client = AsyncMock()
         mock_client_class.return_value = mock_client
         
-        mock_response = AsyncMock()
-        mock_response.status_code = 404
-        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-            "Not found", request=None, response=mock_response
-        )
+        # Create a real httpx Response object with 404 status
+        request = httpx.Request("GET", "http://test.com/test")
+        mock_response = httpx.Response(404, request=request)
         mock_client.request.return_value = mock_response
         
         client = ResilientHTTPClient()
