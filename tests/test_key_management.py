@@ -34,7 +34,7 @@ def test_api_key_manager_basic_functionality():
 
 def test_key_rotation_endpoint():
     """Test the key rotation admin endpoint."""
-    app = create_api(api_key="original-key")
+    app = create_api(api_key="original-key", test_mode=True)
     client = TestClient(app)
     headers = {"X-API-Key": "original-key"}
     
@@ -50,7 +50,7 @@ def test_key_rotation_endpoint():
 
 def test_key_revocation_endpoint():
     """Test the key revocation admin endpoint."""
-    app = create_api(api_key="admin-key")
+    app = create_api(api_key="admin-key", test_mode=True)
     client = TestClient(app)
     headers = {"X-API-Key": "admin-key"}
     
@@ -69,7 +69,7 @@ def test_key_revocation_endpoint():
 
 def test_key_status_endpoint():
     """Test the key status admin endpoint."""
-    app = create_api(api_key="status-key")
+    app = create_api(api_key="status-key", test_mode=True)
     client = TestClient(app)
     headers = {"X-API-Key": "status-key"}
     
@@ -84,7 +84,7 @@ def test_key_status_endpoint():
 
 def test_admin_endpoints_require_auth():
     """Test that admin endpoints require authentication."""
-    app = create_api(api_key="secret")
+    app = create_api(api_key="secret", test_mode=True)
     client = TestClient(app)
     
     # Try without auth header

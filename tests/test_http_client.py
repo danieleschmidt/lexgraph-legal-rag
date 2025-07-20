@@ -3,6 +3,7 @@
 import pytest
 from unittest.mock import AsyncMock, patch
 import httpx
+import time
 
 from lexgraph_legal_rag.http_client import (
     ResilientHTTPClient,
@@ -73,7 +74,9 @@ async def test_circuit_breaker_half_open_transition():
 @pytest.mark.asyncio
 async def test_retry_config_calculation():
     """Test retry delay calculation."""
-    client = ResilientHTTPClient()
+    # Create client with jitter disabled for deterministic testing
+    retry_config = RetryConfig(jitter=False)
+    client = ResilientHTTPClient(retry_config=retry_config)
     
     # Test exponential backoff
     assert client._calculate_delay(0) == 1.0  # initial_delay
@@ -81,7 +84,7 @@ async def test_retry_config_calculation():
     assert client._calculate_delay(2) == 4.0  # initial_delay * base^2
     
     # Test max delay cap
-    config = RetryConfig(initial_delay=10.0, max_delay=15.0, exponential_base=2.0)
+    config = RetryConfig(initial_delay=10.0, max_delay=15.0, exponential_base=2.0, jitter=False)
     client.retry_config = config
     assert client._calculate_delay(1) == 15.0  # Capped at max_delay
 
@@ -138,6 +141,7 @@ async def test_circuit_breaker_blocks_requests():
     
     # Force circuit breaker to open state
     client.circuit_breaker._state = CircuitState.OPEN
+    client.circuit_breaker._last_failure_time = time.time()  # Set recent failure time
     
     with pytest.raises(httpx.HTTPStatusError, match="Circuit breaker is open"):
         await client.get("/test")
@@ -150,11 +154,9 @@ async def test_non_retryable_error():
         mock_client = AsyncMock()
         mock_client_class.return_value = mock_client
         
-        mock_response = AsyncMock()
-        mock_response.status_code = 404
-        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-            "Not found", request=None, response=mock_response
-        )
+        # Create a real httpx Response object with 404 status
+        request = httpx.Request("GET", "http://test.com/test")
+        mock_response = httpx.Response(404, request=request)
         mock_client.request.return_value = mock_response
         
         client = ResilientHTTPClient()

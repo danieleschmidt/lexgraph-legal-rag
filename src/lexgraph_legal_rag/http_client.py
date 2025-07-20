@@ -132,10 +132,13 @@ class ResilientHTTPClient:
         """Make HTTP request with retry logic and circuit breaker protection."""
         
         if not self.circuit_breaker.can_execute():
+            # Create a dummy request and response for the error
+            request = httpx.Request("GET", url)
+            response = httpx.Response(503, request=request)
             raise HTTPStatusError(
                 message="Circuit breaker is open",
-                request=None,
-                response=None
+                request=request,
+                response=response
             )
         
         last_exception = None
@@ -174,7 +177,7 @@ class ResilientHTTPClient:
                 self.circuit_breaker.record_failure()
                 response.raise_for_status()
                 
-            except (RequestError, HTTPStatusError) as e:
+            except RequestError as e:
                 last_exception = e
                 
                 if attempt < self.retry_config.max_retries:

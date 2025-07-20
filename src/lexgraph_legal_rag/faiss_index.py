@@ -117,7 +117,7 @@ class FaissVectorIndex:
     
     def _search_direct(self, query: str, top_k: int) -> List[Tuple[LegalDocument, float]]:
         """Direct search without connection pooling."""
-        with SEARCH_LATENCY.time():
+        with SEARCH_LATENCY.labels(search_type="faiss").time():
             query_vec = self.vectorizer.transform([query]).astype(np.float32).toarray()
             scores, indices = self.index.search(query_vec, top_k)
             results: List[Tuple[LegalDocument, float]] = []
@@ -125,7 +125,7 @@ class FaissVectorIndex:
                 if idx < 0:
                     continue
                 results.append((self._docs[int(idx)], float(score)))
-        SEARCH_REQUESTS.inc()
+        SEARCH_REQUESTS.labels(search_type="faiss").inc()
         return results
     
     def _search_with_pool(self, query: str, top_k: int) -> List[Tuple[LegalDocument, float]]:
@@ -133,7 +133,7 @@ class FaissVectorIndex:
         pooled_index = None
         try:
             pooled_index = self._index_pool.get_index()
-            with SEARCH_LATENCY.time():
+            with SEARCH_LATENCY.labels(search_type="faiss_pooled").time():
                 query_vec = self.vectorizer.transform([query]).astype(np.float32).toarray()
                 scores, indices = pooled_index.search(query_vec, top_k)
                 results: List[Tuple[LegalDocument, float]] = []
@@ -141,7 +141,7 @@ class FaissVectorIndex:
                     if idx < 0:
                         continue
                     results.append((self._docs[int(idx)], float(score)))
-            SEARCH_REQUESTS.inc()
+            SEARCH_REQUESTS.labels(search_type="faiss_pooled").inc()
             return results
         finally:
             if pooled_index is not None:
@@ -157,7 +157,7 @@ class FaissVectorIndex:
             pooled_index = self._index_pool.get_index() if self._use_pool else self.index
             results = []
             
-            with SEARCH_LATENCY.time():
+            with SEARCH_LATENCY.labels(search_type="faiss_batch").time():
                 # Transform all queries at once
                 query_vecs = self.vectorizer.transform(queries).astype(np.float32).toarray()
                 
@@ -172,7 +172,7 @@ class FaissVectorIndex:
                         query_results.append((self._docs[int(idx)], float(score)))
                     results.append(query_results)
             
-            SEARCH_REQUESTS.inc(len(queries))
+            SEARCH_REQUESTS.labels(search_type="faiss_batch").inc(len(queries))
             return results
         finally:
             if pooled_index is not None and self._use_pool:
@@ -201,3 +201,7 @@ class FaissVectorIndex:
         self._docs = [LegalDocument(**d) for d in docs_data]
         self.vectorizer = TfidfVectorizer()
         self.vectorizer.fit([d.text for d in self._docs])
+        
+        # Initialize the connection pool with the loaded index
+        if self._use_pool:
+            self._index_pool.set_master_index(self.index)
