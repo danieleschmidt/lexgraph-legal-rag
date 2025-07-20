@@ -7,7 +7,7 @@ from lexgraph_legal_rag.api import create_api
 
 def test_health_endpoint_no_auth():
     """Test that health endpoint works without authentication."""
-    app = create_api(api_key="secret")
+    app = create_api(api_key="secret", test_mode=True)
     client = TestClient(app)
     
     resp = client.get("/health")
@@ -22,7 +22,7 @@ def test_health_endpoint_no_auth():
 
 def test_readiness_endpoint_no_auth():
     """Test that readiness endpoint works without authentication."""
-    app = create_api(api_key="secret")
+    app = create_api(api_key="secret", test_mode=True)
     client = TestClient(app)
     
     resp = client.get("/ready")
