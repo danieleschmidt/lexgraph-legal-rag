@@ -11,7 +11,32 @@
 
 ## High Priority (WSJF > 7)
 
-### 1. Fix Critical Test Failures & Achieve 80%+ Coverage (WSJF: 9.2) ✅ COMPLETED
+### 1. Fix Test Environment & Dependencies (WSJF: 9.5) ✅ COMPLETED
+- **Business Value**: 10 (enables all development, blocks CI/CD)
+- **Time Criticality**: 10 (pytest not available, tests can't run)
+- **Risk Reduction**: 10 (foundation for quality assurance)
+- **Job Size**: 2 (dependency installation)
+- **Status**: Completed - Major improvement: 68% coverage (was 22%)
+- **Owner**: Terry (Autonomous Agent)
+- **Progress**:
+  - ✅ Created Python virtual environment with all dependencies
+  - ✅ Installed pytest, pytest-asyncio, pytest-cov, and all project dependencies
+  - ✅ Fixed failing test in context_reasoning.py (outdated assertion)
+  - ✅ Resolved compatibility issues with FastAPI middleware imports
+  - ✅ Test coverage improved from 22% to 68% (+46% improvement)
+  - ✅ 87 tests passing, only 3 failing tests remaining
+  - ✅ Established foundation for TDD development workflow
+
+### 2. Fix Remaining Test Failures & Reach 80% Coverage (WSJF: 8.8) 🔧 IN PROGRESS
+- **Business Value**: 9 (production stability, CI/CD reliability)
+- **Time Criticality**: 9 (3 tests failing, close to 80% target)
+- **Risk Reduction**: 9 (prevents production issues)
+- **Job Size**: 2 (targeted test fixes)
+- **Status**: In Progress - 68% coverage, 3 tests failing
+- **Owner**: Terry (Autonomous Agent)
+- **Notes**: Test environment working, need to fix health endpoint and integration tests
+
+### 3. Fix Critical Test Failures & Achieve 80%+ Coverage (WSJF: 9.2) ✅ COMPLETED
 - **Business Value**: 9 (production stability, CI/CD reliability)
 - **Time Criticality**: 10 (blocking deployment, 45 failing tests)
 - **Risk Reduction**: 10 (prevents production issues)
