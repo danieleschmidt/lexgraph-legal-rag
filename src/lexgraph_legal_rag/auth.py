@@ -6,44 +6,114 @@ import os
 import time
 import hashlib
 import logging
-from typing import Set, Optional
+import hmac
+import secrets
+from collections import defaultdict, deque
+from typing import Set, Optional, Dict
 from threading import Lock
 
 logger = logging.getLogger(__name__)
 
 
 class APIKeyManager:
-    """Manages API key rotation and validation."""
+    """Manages API key rotation, validation, and rate limiting."""
     
     def __init__(self) -> None:
         self._active_keys: Set[str] = set()
         self._revoked_keys: Set[str] = set()
+        self._key_metadata: Dict[str, dict] = {}  # Store creation time, usage stats
+        self._key_rate_limits: Dict[str, deque] = defaultdict(lambda: deque())
         self._lock = Lock()
         self._last_rotation = time.time()
+        self._secret_key = self._get_or_create_secret_key()
         
         # Load initial key from environment
         primary_key = os.environ.get("API_KEY")
         if primary_key:
-            self._active_keys.add(primary_key)
+            self._add_key_with_metadata(primary_key, is_primary=True)
         
         # Load additional keys for rotation if available
         for i in range(1, 10):  # Support up to 9 additional keys
             additional_key = os.environ.get(f"API_KEY_{i}")
             if additional_key:
-                self._active_keys.add(additional_key)
+                self._add_key_with_metadata(additional_key, is_primary=False)
+    
+    def _get_or_create_secret_key(self) -> bytes:
+        """Get or create HMAC secret key for API key hashing."""
+        secret_env = os.environ.get("API_KEY_SECRET")
+        if secret_env:
+            return secret_env.encode()
+        
+        # Generate random secret for this session
+        # In production, this should be persisted securely
+        return secrets.token_bytes(32)
+    
+    def _add_key_with_metadata(self, api_key: str, is_primary: bool = False) -> None:
+        """Add key with metadata tracking."""
+        self._active_keys.add(api_key)
+        self._key_metadata[api_key] = {
+            "created_at": time.time(),
+            "is_primary": is_primary,
+            "usage_count": 0,
+            "last_used": None
+        }
     
     def is_valid_key(self, api_key: str) -> bool:
         """Check if the API key is valid and not revoked."""
         with self._lock:
-            return api_key in self._active_keys and api_key not in self._revoked_keys
+            if api_key not in self._active_keys or api_key in self._revoked_keys:
+                return False
+            
+            # Update usage statistics
+            if api_key in self._key_metadata:
+                self._key_metadata[api_key]["usage_count"] += 1
+                self._key_metadata[api_key]["last_used"] = time.time()
+            
+            return True
+    
+    def check_rate_limit(self, api_key: str, limit: int = 60, window: int = 60) -> bool:
+        """Check per-key rate limit. Returns True if within limit."""
+        with self._lock:
+            now = time.time()
+            key_requests = self._key_rate_limits[api_key]
+            
+            # Remove old requests outside the window
+            while key_requests and now - key_requests[0] > window:
+                key_requests.popleft()
+            
+            # Check if within limit
+            if len(key_requests) >= limit:
+                logger.warning(f"Rate limit exceeded for API key {self._hash_key(api_key)}")
+                return False
+            
+            # Add current request
+            key_requests.append(now)
+            return True
     
     def add_key(self, api_key: str) -> None:
         """Add a new API key to the active set."""
         with self._lock:
-            self._active_keys.add(api_key)
+            # Validate key strength
+            if not self._validate_key_strength(api_key):
+                raise ValueError("API key does not meet security requirements")
+            
+            self._add_key_with_metadata(api_key, is_primary=False)
             # Remove from revoked if it was previously revoked
             self._revoked_keys.discard(api_key)
             logger.info(f"Added new API key (hash: {self._hash_key(api_key)})")
+    
+    def _validate_key_strength(self, api_key: str) -> bool:
+        """Validate API key meets security requirements."""
+        if len(api_key) < 16:
+            return False
+        
+        # Check for sufficient entropy
+        import string
+        has_upper = any(c in string.ascii_uppercase for c in api_key)
+        has_lower = any(c in string.ascii_lowercase for c in api_key)
+        has_digit = any(c in string.digits for c in api_key)
+        
+        return sum([has_upper, has_lower, has_digit]) >= 2
     
     def revoke_key(self, api_key: str) -> None:
         """Revoke an API key."""
@@ -74,16 +144,34 @@ class APIKeyManager:
     def get_rotation_info(self) -> dict:
         """Get information about key rotation status."""
         with self._lock:
+            now = time.time()
+            key_ages = []
+            usage_stats = []
+            
+            for key, metadata in self._key_metadata.items():
+                if key in self._active_keys and key not in self._revoked_keys:
+                    key_age_days = (now - metadata["created_at"]) / 86400
+                    key_ages.append(key_age_days)
+                    usage_stats.append(metadata["usage_count"])
+            
             return {
-                "active_keys": len(self._active_keys),
+                "active_keys": len(self._active_keys - self._revoked_keys),
                 "revoked_keys": len(self._revoked_keys),
                 "last_rotation": self._last_rotation,
-                "days_since_rotation": (time.time() - self._last_rotation) / 86400
+                "days_since_rotation": (time.time() - self._last_rotation) / 86400,
+                "oldest_key_age_days": max(key_ages) if key_ages else 0,
+                "average_key_age_days": sum(key_ages) / len(key_ages) if key_ages else 0,
+                "total_api_calls": sum(usage_stats),
+                "keys_needing_rotation": sum(1 for age in key_ages if age > 90)
             }
     
     def _hash_key(self, api_key: str) -> str:
-        """Create a safe hash of the API key for logging."""
-        return hashlib.sha256(api_key.encode()).hexdigest()[:8]
+        """Create a safe HMAC hash of the API key for logging."""
+        return hmac.new(
+            self._secret_key,
+            api_key.encode(),
+            hashlib.sha256
+        ).hexdigest()[:8]
 
 
 # Global instance
