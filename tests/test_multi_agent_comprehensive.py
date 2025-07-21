@@ -194,7 +194,8 @@ class TestCitationAgent:
         agent = CitationAgent()
         # CitationAgent stream method requires answer, docs, and query parameters
         mock_docs = [Mock()]
-        mock_docs[0].content = "Legal document content"
+        mock_docs[0].content = "Legal document content with test query information"
+        mock_docs[0].text = "Legal document content with test query information"
         mock_docs[0].metadata = {"title": "Test Document"}
         
         result_generator = agent.stream("Legal analysis answer", mock_docs, "test query")
