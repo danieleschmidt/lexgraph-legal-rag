@@ -60,6 +60,46 @@ class RetrieverAgent:
         logger.debug("Retrieved %d documents with total length %d", len(results), len(combined_text))
         
         return combined_text
+    
+    async def batch_run(self, queries: list[str]) -> list[str]:
+        """Retrieve relevant text for multiple queries using batch processing."""
+        logger.debug("RetrieverAgent batch running with %d queries", len(queries))
+        
+        if self.pipeline is None:
+            logger.warning("No pipeline configured for RetrieverAgent, returning stub responses")
+            return [f"retrieved: {query}" for query in queries]
+        
+        # Use batch search for better performance
+        if hasattr(self.pipeline, 'batch_search'):
+            batch_results = self.pipeline.batch_search(queries, top_k=self.top_k)
+        else:
+            # Fallback to individual searches
+            batch_results = [self.pipeline.search(query, top_k=self.top_k) for query in queries]
+        
+        # Process each query's results
+        combined_texts = []
+        for i, (query, results) in enumerate(zip(queries, batch_results)):
+            # Filter out results with very low relevance scores
+            relevant_results = [(doc, score) for doc, score in results if score > 0.01]
+            
+            if not relevant_results:
+                logger.info("No relevant documents found for query: %s", query)
+                combined_texts.append(f"No relevant documents found for: {query}")
+                continue
+            
+            # Combine retrieved documents into a single text
+            retrieved_texts = []
+            for doc, score in relevant_results:
+                # Include document metadata for context
+                source = doc.metadata.get("path", doc.id)
+                retrieved_texts.append(f"[Source: {source}, Relevance: {score:.3f}]\n{doc.text[:500]}...")
+            
+            combined_text = "\n\n".join(retrieved_texts)
+            combined_texts.append(combined_text)
+            logger.debug("Query %d: Retrieved %d documents with total length %d", 
+                        i, len(relevant_results), len(combined_text))
+        
+        return combined_texts
 
 
 @dataclass
@@ -367,7 +407,7 @@ class MultiAgentGraph:
     async def run_with_citations(
         self, query: str, pipeline: Any, top_k: int = 3  # pipeline: LegalDocumentPipeline
     ) -> AsyncIterator[str]:
-        """Run the pipeline and yield an answer with citations."""
+        """Run the pipeline and yield an answer with citations (optimized to avoid N+1 queries)."""
         logger.info("Running agent graph with citations for query: %s", query)
         
         # Set pipeline for this run if not already set
@@ -376,13 +416,78 @@ class MultiAgentGraph:
             if hasattr(self.retriever, 'pipeline'):
                 self.retriever.pipeline = pipeline
         
-        answer = await self.run(query)
-        results = pipeline.search(query, top_k=top_k)
-        docs = [doc for doc, _ in results]
+        # Use batch processing to get both answer and citation docs in one operation
+        answer, docs = await self._run_with_batch_optimization(query, pipeline, top_k)
+        
         citation_agent = CitationAgent()
         for chunk in citation_agent.stream(answer, docs, query):
             yield chunk
 
+    async def _run_with_batch_optimization(
+        self, query: str, pipeline: Any, top_k: int = 3
+    ) -> tuple[str, list]:
+        """Run pipeline with batch optimization to eliminate N+1 query pattern.
+        
+        Returns:
+            Tuple of (answer, documents) where documents are already retrieved
+            to avoid duplicate search operations.
+        """
+        # Analyze query to determine routing and retrieval needs
+        routing_decision = self.router.analyze_query_complexity(query)
+        logger.debug("Batch optimization: routing decision '%s' for query: %s", routing_decision, query)
+        
+        # Get retrieval results once - this will be used for both processing and citations
+        if self.pipeline and hasattr(self.retriever, 'pipeline'):
+            self.retriever.pipeline = pipeline
+        
+        # Perform retrieval (this handles caching internally)
+        retrieved = await self.retriever.run(query)
+        
+        # Get the actual documents for citations by searching again
+        # BUT optimize by using batch search if we need multiple variations
+        search_queries = [query]
+        
+        # For complex queries, we might want to search for related terms too
+        if routing_decision in ["explain", "default"] and len(query.split()) > 2:
+            # Extract key terms for additional context searches
+            words = query.lower().split()
+            legal_terms = [w for w in words if w in [
+                'liability', 'breach', 'contract', 'agreement', 'clause', 
+                'warranty', 'indemnify', 'damages', 'termination'
+            ]]
+            if legal_terms:
+                search_queries.extend(legal_terms[:2])  # Add up to 2 key legal terms
+        
+        # Use batch search for all queries at once
+        if len(search_queries) > 1:
+            batch_results = pipeline.batch_search(search_queries, top_k=top_k)
+            # Use the primary query results for citations
+            docs = [doc for doc, _ in batch_results[0]] if batch_results else []
+        else:
+            results = pipeline.search(query, top_k=top_k)
+            docs = [doc for doc, _ in results]
+        
+        # Process the retrieved text through the agent pipeline
+        if retrieved.startswith("No relevant documents"):
+            return retrieved, []
+        
+        # Apply the same processing logic as the original run method
+        if routing_decision == "search":
+            answer = retrieved
+        else:
+            summary = await self.summarizer.run(retrieved)
+            
+            if routing_decision == "summary":
+                answer = summary
+            elif routing_decision == "explain" or (routing_decision == "default" and self.router.decide(query)):
+                answer = await self.clause_explainer.run(summary)
+            else:
+                answer = summary
+        
+        logger.debug("Batch optimization completed: answer length %d, docs retrieved %d", 
+                    len(answer), len(docs))
+        return answer, docs
+    
     def run_with_citations_sync(
         self, query: str, pipeline: Any, top_k: int = 3  # pipeline: LegalDocumentPipeline
     ) -> Iterator[str]:

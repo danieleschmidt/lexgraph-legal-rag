@@ -83,6 +83,32 @@ class EmbeddingIndex:
             results = [(self._docs[i], float(scores[i])) for i in indices]
         SEARCH_REQUESTS.labels(search_type="semantic").inc()
         return results
+    
+    def batch_search(self, queries: List[str], top_k: int = 5) -> List[List[Tuple[LegalDocument, float]]]:
+        """Perform batch search for multiple queries efficiently."""
+        if self._matrix is None:
+            return [[] for _ in queries]
+        
+        results = []
+        with SEARCH_LATENCY.labels(search_type="semantic_batch").time():
+            # Transform all queries at once for better efficiency
+            query_vecs = self.model.transform(queries)
+            # Compute all similarity scores in one batch operation
+            all_scores = cosine_similarity(query_vecs, self._matrix)
+            
+            for i, query in enumerate(queries):
+                scores = all_scores[i]
+                if not len(scores):
+                    results.append([])
+                    continue
+                
+                # Get top_k results for this query
+                indices = np.argsort(scores)[::-1][:top_k]
+                query_results = [(self._docs[idx], float(scores[idx])) for idx in indices]
+                results.append(query_results)
+        
+        SEARCH_REQUESTS.labels(search_type="semantic_batch").inc(len(queries))
+        return results
 
 
 @dataclass
@@ -98,6 +124,10 @@ class SemanticSearchPipeline:
     def search(self, query: str, top_k: int = 5) -> List[Tuple[LegalDocument, float]]:
         """Return documents most relevant to ``query`` according to embedding similarity."""
         return self.index.search(query, top_k=top_k)
+    
+    def batch_search(self, queries: List[str], top_k: int = 5) -> List[List[Tuple[LegalDocument, float]]]:
+        """Return documents most relevant to multiple queries using batch processing."""
+        return self.index.batch_search(queries, top_k=top_k)
 
     def save(self, path: str | Path) -> None:
         """Persist the embedding index to ``path``."""

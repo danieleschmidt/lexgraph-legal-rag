@@ -204,3 +204,86 @@ class LegalDocumentPipeline:
             )
         
         return results
+    
+    def batch_search(
+        self, queries: List[str], top_k: int = 5, semantic: bool | None = None, use_cache: bool = True
+    ) -> List[List[Tuple[LegalDocument, float]]]:
+        """Perform batch search for multiple queries efficiently.
+        
+        This method is optimized to reduce the N+1 query pattern by batching
+        multiple search requests into a single operation.
+        """
+        if not queries:
+            return []
+        
+        # Determine which search method to use
+        use_semantic = (semantic or semantic is None and self.semantic) and self.semantic
+        
+        # Check cache for all queries if enabled
+        cached_results = []
+        uncached_queries = []
+        uncached_indices = []
+        
+        if use_cache:
+            cache = get_query_cache()
+            for i, query in enumerate(queries):
+                cached_result = cache.get(
+                    query=query,
+                    top_k=top_k,
+                    semantic=use_semantic,
+                )
+                if cached_result is not None:
+                    cached_results.append((i, cached_result))
+                else:
+                    uncached_queries.append(query)
+                    uncached_indices.append(i)
+        else:
+            uncached_queries = queries
+            uncached_indices = list(range(len(queries)))
+        
+        # Perform batch search for uncached queries
+        batch_results = []
+        if uncached_queries:
+            if use_semantic:
+                # Semantic search batch processing (if implemented)
+                if hasattr(self.semantic, 'batch_search'):
+                    batch_results = self.semantic.batch_search(uncached_queries, top_k=top_k)
+                else:
+                    # Fallback to individual searches
+                    batch_results = [self.semantic.search(query, top_k=top_k) for query in uncached_queries]
+            else:
+                # Vector search batch processing
+                batch_results = self.index.batch_search(uncached_queries, top_k=top_k)
+            
+            # Cache the new results
+            if use_cache:
+                cache = get_query_cache()
+                for query, results in zip(uncached_queries, batch_results):
+                    if results:
+                        cache.put(
+                            query=query,
+                            top_k=top_k,
+                            semantic=use_semantic,
+                            results=results
+                        )
+        
+        # Combine cached and new results in original order
+        final_results = [[] for _ in queries]
+        
+        # Fill in cached results
+        for orig_idx, cached_result in cached_results:
+            final_results[orig_idx] = cached_result
+        
+        # Fill in new batch results
+        for batch_idx, orig_idx in enumerate(uncached_indices):
+            if batch_idx < len(batch_results):
+                final_results[orig_idx] = batch_results[batch_idx]
+        
+        logger.debug("Batch search completed for %d queries (%d cached, %d new)", 
+                    len(queries), len(cached_results), len(uncached_queries))
+        
+        return final_results
+
+    @property
+    def documents(self) -> List[LegalDocument]:
+        return self.index.documents
