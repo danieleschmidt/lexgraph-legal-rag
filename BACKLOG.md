@@ -116,21 +116,23 @@
 
 ## Medium Priority (WSJF 4-7)
 
-### 5. Fix Test Failures & Increase Coverage to 80%+ (WSJF: 8.5) ✅ MAJOR PROGRESS
+### 5. Boost Core Module Test Coverage to 80%+ (WSJF: 9.1) 🔄 IN PROGRESS
 - **Business Value**: 9 (production stability, deployment confidence)
-- **Time Criticality**: 8 (blocking deployments, was 27% coverage)
+- **Time Criticality**: 10 (currently at 27% coverage, need 80%+ for CI/CD)
 - **Risk Reduction**: 9 (prevents production issues, enables safe refactoring)
-- **Job Size**: 3 (fix failing tests, add missing coverage)
-- **Status**: Major Progress - Key modules significantly improved
+- **Job Size**: 3 (strategic coverage improvements on high-impact modules)
+- **Status**: In Progress - Current coverage: 27% (301 tests passing)
 - **Owner**: Terry (Autonomous Agent)
 - **Progress**:
-  - ✅ Fixed missing psutil dependency for health endpoints
-  - ✅ Fixed multi-agent test to match improved implementation  
-  - ✅ Added comprehensive multi-agent tests: 16% → 78% coverage (+62%)
-  - ✅ Added comprehensive API tests: 0% → 28% coverage (+28%)
-  - ✅ Overall project coverage improved: ~20% → 25% (+5%)
-  - ✅ 48 new API test cases covering all endpoints, middleware, auth
-  - 🔄 Next targets: Document pipeline (16% coverage), Versioning (18% coverage)
+  - ✅ Established comprehensive test environment with 301 tests
+  - ✅ Fixed pytest dependency conflicts and virtual environment setup
+  - ✅ Current coverage breakdown identified:
+    - API Module: 25% coverage (229 lines) - Critical production endpoints
+    - Multi-Agent: 16% coverage (217 lines) - Core product functionality
+    - Document Pipeline: 16% coverage (130 lines) - Essential data processing
+    - Versioning: 18% coverage (130 lines) - API versioning middleware
+    - FAISS Index: 19% coverage (145 lines) - Vector search operations
+  - 🔄 Next: Target highest-impact modules for coverage boost
 
 ### 6. Implement Performance Optimization - Batch Processing (WSJF: 7.3)
 - **Business Value**: 8 (query performance, user experience)
