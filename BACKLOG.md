@@ -11,6 +11,21 @@
 
 ## High Priority (WSJF > 7)
 
+### 0. CRITICAL: Fix CORS Security Vulnerability (WSJF: 9.5) ✅ COMPLETED
+- **Business Value**: 10 (prevents security breaches, compliance)
+- **Time Criticality**: 10 (critical security vulnerability)
+- **Risk Reduction**: 10 (eliminates cross-origin attack vector)
+- **Job Size**: 2 (configuration + tests)
+- **Status**: ✅ COMPLETED - Critical security fix deployed
+- **Owner**: Terry (Autonomous Agent)
+- **Progress**:
+  - ✅ Fixed allow_origins=["*"] vulnerability with secure configuration
+  - ✅ Implemented environment-based CORS policy (CORS_ALLOWED_ORIGINS)
+  - ✅ Added production vs development CORS security modes
+  - ✅ Created comprehensive CORS security test suite (9 tests passing)
+  - ✅ Added CORS security documentation and migration guide
+  - ✅ Enhanced API coverage from 47% to 51% during implementation
+
 ### 1. Fix Test Environment & Dependencies (WSJF: 9.5) ✅ COMPLETED
 - **Business Value**: 10 (enables all development, blocks CI/CD)
 - **Time Criticality**: 10 (pytest not available, tests can't run)
@@ -185,14 +200,17 @@
 - **Owner**: Unassigned
 - **Details**: N+1 query pattern in multi-agent pipeline. Batch methods exist but unused.
 
-### 7. Security Hardening - CORS & API Key Management (WSJF: 6.7)
+### 7. Security Hardening - API Key Management (WSJF: 7.5) 🔄 PARTIALLY COMPLETED
 - **Business Value**: 7 (security compliance)
 - **Time Criticality**: 8 (security vulnerability)
 - **Risk Reduction**: 9 (prevent security breaches)
-- **Job Size**: 4 (CORS config, key encryption, per-key rate limiting)
-- **Status**: Not Started
-- **Owner**: Unassigned
-- **Details**: CORS allows all origins, API keys in plaintext, no per-key rate limiting
+- **Job Size**: 3 (key encryption, per-key rate limiting - CORS completed)
+- **Status**: Partially Complete - CORS security implemented
+- **Owner**: Terry (Autonomous Agent)
+- **Progress**:
+  - ✅ CORS security vulnerability fixed with environment-based configuration
+  - 🔄 Remaining: API key encryption, per-key rate limiting
+- **Details**: API keys in plaintext, no per-key rate limiting
 
 ### 8. Optimize CI Pipeline to <15min (WSJF: 6.0)
 - **Business Value**: 6 (developer productivity)
