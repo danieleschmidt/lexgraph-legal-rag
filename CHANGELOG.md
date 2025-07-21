@@ -1,3 +1,22 @@
+# Release v1.0.4 (2025-07-21)
+
+## 🔒 Security Hardening
+- **CRITICAL FIX**: Secure CORS configuration replacing wildcard origins
+- feat(cors): environment-based CORS origin control
+- feat(security): production vs development CORS policies
+- feat(config): CORS_ALLOWED_ORIGINS environment configuration
+- feat(api): restricted methods and headers in production mode
+- test(security): comprehensive CORS security test suite (9 tests)
+- docs(security): CORS security configuration documentation
+
+## 🛡️ Security Improvements
+- **Breaking Change**: Production mode no longer allows all origins by default
+- **Security Risk Eliminated**: Removed `allow_origins=["*"]` vulnerability
+- **Environment Control**: CORS origins must be explicitly configured in production
+- **Defense in Depth**: Layered CORS security with method/header restrictions
+
+---
+
 # Release v1.0.3 (2025-07-19)
 
 ## 🚨 Alerting

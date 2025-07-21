@@ -75,6 +75,17 @@ class VersionNegotiationMiddleware(BaseHTTPMiddleware):
         # Add version info to request state
         request.state.api_version = version
         
+        # Rewrite URL if version is in path (e.g., /v1/test -> /test)
+        original_path = request.url.path
+        if VERSION_PATTERNS["url"].search(original_path):
+            # Remove version prefix from path
+            new_path = VERSION_PATTERNS["url"].sub("/", original_path)
+            if new_path.startswith("//"):
+                new_path = new_path[1:]  # Remove double slash
+            
+            # Update request scope path for URL rewriting
+            request.scope["path"] = new_path
+        
         # Add version headers to response
         response = await call_next(request)
         if hasattr(response, 'headers'):
@@ -230,7 +241,7 @@ class VersionedResponse:
             if "error" in data:
                 return {
                     "success": False,
-                    "error": data,
+                    "error": data["error"],
                     "metadata": {
                         "version": str(version),
                         "timestamp": data.get("timestamp"),

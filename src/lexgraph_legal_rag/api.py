@@ -37,6 +37,58 @@ API_KEY_ENV = "API_KEY"  # pragma: allowlist secret
 RATE_LIMIT = 60  # requests per minute
 
 
+def _get_cors_origins(test_mode: bool) -> list[str]:
+    """Get CORS allowed origins based on environment and mode."""
+    # Check for explicit configuration first
+    cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS")
+    if cors_origins:
+        return [origin.strip() for origin in cors_origins.split(",")]
+    
+    # Default secure configuration based on mode
+    if test_mode:
+        # Development/test mode: allow common development origins
+        return [
+            "http://localhost:3000",
+            "http://localhost:8080", 
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:8080"
+        ]
+    else:
+        # Production mode: no origins allowed by default (must be explicitly configured)
+        return []
+
+
+def _get_cors_methods(test_mode: bool) -> list[str]:
+    """Get CORS allowed methods based on environment and mode."""
+    cors_methods = os.environ.get("CORS_ALLOWED_METHODS")
+    if cors_methods:
+        return [method.strip() for method in cors_methods.split(",")]
+    
+    # Default secure methods
+    if test_mode:
+        return ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    else:
+        return ["GET", "POST", "OPTIONS"]  # Minimal set for production
+
+
+def _get_cors_headers(test_mode: bool) -> list[str]:
+    """Get CORS allowed headers based on environment and mode."""
+    cors_headers = os.environ.get("CORS_ALLOWED_HEADERS")
+    if cors_headers:
+        return [header.strip() for header in cors_headers.split(",")]
+    
+    # Default secure headers
+    return [
+        "Accept",
+        "Accept-Language", 
+        "Content-Language",
+        "Content-Type",
+        "X-API-Key",
+        "X-API-Version",
+        "X-Correlation-ID"
+    ]
+
+
 def verify_api_key(x_api_key: str, api_key: str | None = None) -> None:
     # Use the key manager for validation if available, fallback to legacy method
     try:
