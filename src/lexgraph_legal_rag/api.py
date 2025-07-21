@@ -43,11 +43,18 @@ def verify_api_key(x_api_key: str, api_key: str | None = None) -> None:
         key_manager = get_key_manager()
         
         if key_manager.get_active_key_count() > 0:
-            # Use key manager for validation
+            # Use key manager for validation with rate limiting
             if not key_manager.is_valid_key(x_api_key):
                 logger.warning("invalid API key attempt via key manager", extra={"provided": x_api_key[:8] + "..."})
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key"
+                )
+            
+            # Check per-key rate limit
+            if not key_manager.check_rate_limit(x_api_key):
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail="Rate limit exceeded for this API key"
                 )
         else:
             # Fallback to legacy validation
@@ -58,6 +65,9 @@ def verify_api_key(x_api_key: str, api_key: str | None = None) -> None:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key"
                 )
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
     except Exception as e:
         # In case of any auth system failure, fall back to direct comparison
         if api_key is None:
@@ -223,6 +233,7 @@ def create_api(
     rate_limit: int = RATE_LIMIT,
     enable_docs: bool = True,
     test_mode: bool = False,
+    config = None,
 ) -> FastAPI:
     """Return a FastAPI app configured for the given API ``version``."""
     if version not in SUPPORTED_VERSIONS:
@@ -232,6 +243,10 @@ def create_api(
         api_key = os.environ.get(API_KEY_ENV)
     if not api_key and not test_mode:
         raise ValueError("API key not provided")
+    
+    # Get or validate configuration
+    if config is None:
+        config = validate_environment(allow_test_mode=test_mode)
     
     # Setup test mode key management if needed
     if test_mode and api_key:
@@ -278,13 +293,23 @@ def create_api(
         openapi_url="/openapi.json" if enable_docs else None,
     )
 
-    # Add CORS middleware
+    # Add CORS middleware with security-focused configuration
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Configure appropriately for production
+        allow_origins=config.allowed_origins,
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=[
+            "Authorization",
+            "Content-Type", 
+            "X-API-Key",
+            "X-API-Version",
+            "X-Requested-With",
+            "Accept",
+            "Origin",
+        ],
+        expose_headers=["X-Correlation-ID", "X-API-Version"],
+        max_age=600,  # Cache preflight for 10 minutes
     )
     
     # Add HTTP monitoring middleware for alerting

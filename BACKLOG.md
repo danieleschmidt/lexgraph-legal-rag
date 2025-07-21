@@ -171,14 +171,23 @@
 - **Owner**: Unassigned
 - **Details**: N+1 query pattern in multi-agent pipeline. Batch methods exist but unused.
 
-### 7. Security Hardening - CORS & API Key Management (WSJF: 6.7)
+### 7. Security Hardening - CORS & API Key Management (WSJF: 6.7) ✅ COMPLETED
 - **Business Value**: 7 (security compliance)
 - **Time Criticality**: 8 (security vulnerability)
 - **Risk Reduction**: 9 (prevent security breaches)
 - **Job Size**: 4 (CORS config, key encryption, per-key rate limiting)
-- **Status**: Not Started
-- **Owner**: Unassigned
-- **Details**: CORS allows all origins, API keys in plaintext, no per-key rate limiting
+- **Status**: Completed - Major security improvements implemented
+- **Owner**: Terry (Autonomous Agent)
+- **Progress**:
+  - ✅ Fixed CORS wildcard vulnerability - now configurable per environment
+  - ✅ Implemented per-API-key rate limiting with usage tracking
+  - ✅ Added HMAC-based secure API key hashing for logging
+  - ✅ Enhanced API key validation with strength requirements
+  - ✅ Added HTTPS enforcement configuration option
+  - ✅ Created comprehensive security test suite (25+ tests)
+  - ✅ Added security configuration examples and documentation
+  - ✅ Implemented key age tracking and rotation monitoring
+  - ✅ Enhanced CORS with specific headers and methods restrictions
 
 ### 8. Optimize CI Pipeline to <15min (WSJF: 6.0)
 - **Business Value**: 6 (developer productivity)
