@@ -11,13 +11,13 @@ def test_api_key_manager_basic_functionality():
     """Test basic API key manager operations."""
     manager = APIKeyManager()
     
-    # Add a key
-    manager.add_key("test-key-1")
+    # Add a key (using test mode for unit testing)
+    manager.add_key("test-key-1", test_mode=True)
     assert manager.is_valid_key("test-key-1")
     assert manager.get_active_key_count() == 1
     
     # Add another key
-    manager.add_key("test-key-2")
+    manager.add_key("test-key-2", test_mode=True)
     assert manager.get_active_key_count() == 2
     
     # Revoke a key
@@ -109,9 +109,9 @@ def test_multiple_keys_from_environment():
     manager = APIKeyManager()
     
     # Manually add multiple keys to simulate env loading
-    manager.add_key("key1")
-    manager.add_key("key2")
-    manager.add_key("key3")
+    manager.add_key("key1", test_mode=True)
+    manager.add_key("key2", test_mode=True)
+    manager.add_key("key3", test_mode=True)
     
     assert manager.get_active_key_count() == 3
     assert manager.is_valid_key("key1")
