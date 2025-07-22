@@ -25,3 +25,6 @@ packages = ["lexgraph_legal_rag"]
 addopts = "-ra --cov=lexgraph_legal_rag --cov-branch --cov-fail-under=80"
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "integration: marks tests as integration tests",
+]
