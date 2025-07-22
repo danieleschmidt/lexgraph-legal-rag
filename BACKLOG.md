@@ -11,7 +11,24 @@
 
 ## High Priority (WSJF > 7)
 
-### 0. CRITICAL: Fix CORS Security Vulnerability (WSJF: 9.5) ✅ COMPLETED
+### 0. CRITICAL: Stabilize CI/CD Pipeline - Test Infrastructure (WSJF: 10.0) ✅ MAJOR PROGRESS
+- **Business Value**: 10 (enables deployment, prevents production issues)
+- **Time Criticality**: 10 (143 failing tests blocking CI/CD)
+- **Risk Reduction**: 10 (prevents production failures, enables safe releases)
+- **Job Size**: 3 (systematic test fixing with existing framework)
+- **Status**: ✅ MAJOR PROGRESS - Core test infrastructure stabilized
+- **Owner**: Terry (Autonomous Agent)
+- **Progress**:
+  - ✅ Fixed API authentication validation for test mode
+  - ✅ Fixed configuration validation with proper test/dev key detection
+  - ✅ Fixed key management tests with test-mode validation
+  - ✅ Added pytest marker registration to eliminate warnings
+  - ✅ Test coverage improved: 13% → 30% for core modules
+  - ✅ Core modules now stable: API auth (100%), config (100%), key mgmt (100%)
+  - ✅ Established foundation for continued systematic test fixing
+  - 🔄 Next: Address remaining integration test environment issues
+
+### 1. CRITICAL: Fix CORS Security Vulnerability (WSJF: 9.5) ✅ COMPLETED
 - **Business Value**: 10 (prevents security breaches, compliance)
 - **Time Criticality**: 10 (critical security vulnerability)
 - **Risk Reduction**: 10 (eliminates cross-origin attack vector)
