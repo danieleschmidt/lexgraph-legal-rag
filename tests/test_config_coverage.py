@@ -77,7 +77,10 @@ def test_config_to_dict():
             'api_key_set': True,
             'openai_api_key_set': True,
             'pinecone_api_key_set': False,
-            'legal_corpus_path': '/custom/path'
+            'legal_corpus_path': '/custom/path',
+            'allowed_origins': ['http://localhost:3000', 'http://localhost:8080', 'http://localhost:8501'],
+            'require_https': False,
+            'max_key_age_days': 90
         }
         assert result == expected
 
