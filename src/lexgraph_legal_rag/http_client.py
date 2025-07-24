@@ -222,8 +222,8 @@ class ResilientHTTPClient:
         )
         
         if self.retry_config.jitter:
-            import random
-            delay *= (0.5 + random.random() * 0.5)  # Add 0-50% jitter
+            import secrets
+            delay *= (0.5 + secrets.randbelow(1000) / 2000.0)  # Add 0-50% jitter with cryptographically secure random
         
         return delay
     
