@@ -17,8 +17,11 @@ class TestCORSSecurity:
 
     def test_cors_production_mode_restrictive(self):
         """Test CORS configuration in production mode is restrictive."""
-        # Set API_KEY environment variable for production mode
-        with patch.dict(os.environ, {"API_KEY": "test-key-12345"}):
+        # Set required environment variables for production mode
+        with patch.dict(os.environ, {
+            "API_KEY": "test-key-12345",
+            "ENVIRONMENT": "production"
+        }, clear=False):
             app = create_api(api_key="test-key", test_mode=False)
             client = TestClient(app)
             
@@ -63,7 +66,11 @@ class TestCORSSecurity:
         """Test CORS configuration respects environment variables."""
         allowed_origins = "https://example.com,https://app.example.com"
         
-        with patch.dict(os.environ, {"CORS_ALLOWED_ORIGINS": allowed_origins}):
+        with patch.dict(os.environ, {
+            "API_KEY": "test-key-12345",
+            "CORS_ALLOWED_ORIGINS": allowed_origins,
+            "ENVIRONMENT": "production"
+        }, clear=False):
             app = create_api(api_key="test-key", test_mode=False)
             client = TestClient(app)
             
@@ -83,8 +90,12 @@ class TestCORSSecurity:
 
     def test_cors_security_headers_present(self):
         """Test that security-related CORS headers are properly configured."""
-        app = create_api(api_key="test-key", test_mode=False)
-        client = TestClient(app)
+        with patch.dict(os.environ, {
+            "API_KEY": "test-key-12345",
+            "ENVIRONMENT": "production"
+        }, clear=False):
+            app = create_api(api_key="test-key", test_mode=False)
+            client = TestClient(app)
         
         response = client.options(
             "/ping",
@@ -102,8 +113,12 @@ class TestCORSSecurity:
 
     def test_cors_methods_restricted(self):
         """Test that CORS allowed methods are restricted appropriately."""
-        app = create_api(api_key="test-key", test_mode=False)
-        client = TestClient(app)
+        with patch.dict(os.environ, {
+            "API_KEY": "test-key-12345",
+            "ENVIRONMENT": "production"
+        }, clear=False):
+            app = create_api(api_key="test-key", test_mode=False)
+            client = TestClient(app)
         
         response = client.options(
             "/ping",
@@ -121,8 +136,12 @@ class TestCORSSecurity:
 
     def test_cors_headers_restricted(self):
         """Test that CORS allowed headers are restricted appropriately."""
-        app = create_api(api_key="test-key", test_mode=False)
-        client = TestClient(app)
+        with patch.dict(os.environ, {
+            "API_KEY": "test-key-12345",
+            "ENVIRONMENT": "production"
+        }, clear=False):
+            app = create_api(api_key="test-key", test_mode=False)
+            client = TestClient(app)
         
         response = client.options(
             "/ping",
@@ -146,7 +165,11 @@ class TestCORSEnvironmentConfiguration:
         """Test CORS origins can be configured via environment."""
         origins = "https://app1.com,https://app2.com"
         
-        with patch.dict(os.environ, {"CORS_ALLOWED_ORIGINS": origins}):
+        with patch.dict(os.environ, {
+            "API_KEY": "test-key-12345",
+            "CORS_ALLOWED_ORIGINS": origins,
+            "ENVIRONMENT": "production"
+        }, clear=False):
             app = create_api(api_key="test-key", test_mode=False)
             # App should be created without error
             assert app is not None

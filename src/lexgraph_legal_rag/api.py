@@ -350,16 +350,8 @@ def create_api(
         CORSMiddleware,
         allow_origins=config.allowed_origins,
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=[
-            "Authorization",
-            "Content-Type", 
-            "X-API-Key",
-            "X-API-Version",
-            "X-Requested-With",
-            "Accept",
-            "Origin",
-        ],
+        allow_methods=_get_cors_methods(test_mode),
+        allow_headers=_get_cors_headers(test_mode),
         expose_headers=["X-Correlation-ID", "X-API-Version"],
         max_age=600,  # Cache preflight for 10 minutes
     )
