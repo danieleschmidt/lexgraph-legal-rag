@@ -1,0 +1,227 @@
+---
+# Autonomous Backlog Management System
+# WSJF Score = (Business Value + Time Criticality + Risk Reduction) / Job Size
+# All scores use fibonacci scale: 1, 2, 3, 5, 8, 13
+
+metadata:
+  version: "1.0"
+  last_updated: "2025-07-24"
+  updated_by: "Terry (Autonomous Agent)"
+  target_coverage: 90
+  current_coverage: 40.42
+
+backlog:
+  # HIGH PRIORITY ITEMS (WSJF > 7)
+  
+  - id: "auth-module-coverage"
+    title: "Implement comprehensive Auth module test coverage"
+    type: "test-coverage"
+    description: "Auth module currently has 0% test coverage on 62 lines of critical security code"
+    acceptance_criteria:
+      - "Achieve 80%+ test coverage on auth.py"
+      - "Test API key validation and strength requirements"
+      - "Test HMAC-based key hashing functionality"
+      - "Test authentication middleware integration"
+      - "Test security edge cases and error handling"
+    effort: 3
+    value: 10  # Critical security functionality
+    time_criticality: 10  # Security gaps are urgent
+    risk_reduction: 10  # Prevents security vulnerabilities
+    wsjf_score: 10.0
+    status: "READY"
+    risk_tier: "medium"
+    created_at: "2025-07-24"
+    links:
+      - "src/lexgraph_legal_rag/auth.py"
+      - "TECH_DEBT.md#auth-module-testing"
+  
+  - id: "ci-pipeline-fix"
+    title: "Fix CI pipeline test execution"
+    type: "infrastructure"
+    description: "CI test results show 0 tests running - pipeline appears broken"
+    acceptance_criteria:
+      - "Diagnose why tests aren't executing in CI"
+      - "Fix test discovery and execution issues"
+      - "Ensure all test suites run successfully"
+      - "Validate coverage reporting works"
+      - "Document CI troubleshooting steps"
+    effort: 2
+    value: 9  # Blocks deployment pipeline
+    time_criticality: 10  # CI/CD is broken
+    risk_reduction: 9  # Prevents production issues
+    wsjf_score: 14.0
+    status: "READY"
+    risk_tier: "high"
+    created_at: "2025-07-24"
+    links:
+      - "ci_test_runner.py"
+      - "run_tests_optimized.py"
+  
+  - id: "cache-module-coverage"
+    title: "Boost Cache module test coverage to 80%"
+    type: "test-coverage"
+    description: "Cache module has 22% coverage on 144 lines - critical for performance"
+    acceptance_criteria:
+      - "Achieve 80%+ test coverage on cache.py"
+      - "Test LRU cache implementation edge cases"
+      - "Test cache invalidation and expiry logic"
+      - "Test memory management under load"
+      - "Test cache miss/hit ratio optimization"
+    effort: 3
+    value: 8  # Performance critical
+    time_criticality: 7  # Important for scalability
+    risk_reduction: 8  # Prevents performance issues
+    wsjf_score: 7.7
+    status: "READY"
+    risk_tier: "medium"
+    created_at: "2025-07-24"
+    links:
+      - "src/lexgraph_legal_rag/cache.py"
+      - "TECH_DEBT.md#cache-module-testing"
+  
+  - id: "http-client-coverage"
+    title: "Implement HTTP Client module test coverage"
+    type: "test-coverage"  
+    description: "HTTP Client has 0% coverage on 131 lines - handles external service calls"
+    acceptance_criteria:
+      - "Achieve 80%+ test coverage on http_client.py"
+      - "Test circuit breaker pattern implementation"
+      - "Test retry logic and timeout handling"
+      - "Test network error scenarios with mocking"
+      - "Test connection pooling and resource management"
+    effort: 3
+    value: 7  # External service reliability
+    time_criticality: 8  # Network failures impact users
+    risk_reduction: 9  # Prevents cascading failures
+    wsjf_score: 8.0
+    status: "READY"
+    risk_tier: "medium"
+    created_at: "2025-07-24"
+    links:
+      - "src/lexgraph_legal_rag/http_client.py"
+      - "TECH_DEBT.md#http-client-testing"
+
+  # MEDIUM PRIORITY ITEMS (WSJF 4-7)
+  
+  - id: "faiss-index-coverage"
+    title: "Improve FAISS Index module test coverage"
+    type: "test-coverage"
+    description: "FAISS Index has 19% coverage on 143 lines - core search functionality"
+    acceptance_criteria:
+      - "Achieve 80%+ test coverage on faiss_index.py"
+      - "Test vector search operations with mock data"
+      - "Test index initialization and persistence"
+      - "Test similarity scoring and ranking"
+      - "Test error handling for corrupted indices"
+    effort: 5  # Complex due to FAISS dependency
+    value: 9  # Core product functionality
+    time_criticality: 6  # Important but not urgent
+    risk_reduction: 8  # Prevents search failures
+    wsjf_score: 4.6
+    status: "READY"
+    risk_tier: "medium"
+    created_at: "2025-07-24"
+    links:
+      - "src/lexgraph_legal_rag/faiss_index.py"
+      - "TECH_DEBT.md#faiss-index-testing"
+  
+  - id: "circuit-breaker-docs"
+    title: "Add Circuit Breaker Pattern Documentation"
+    type: "documentation"
+    description: "Document existing circuit breaker pattern for operational knowledge"
+    acceptance_criteria:
+      - "Document circuit breaker implementation in http_client.py"
+      - "Create operational runbook for circuit breaker events"
+      - "Add monitoring and alerting guidance"
+      - "Document configuration parameters"
+      - "Add troubleshooting guide"
+    effort: 2
+    value: 4  # Maintainability
+    time_criticality: 3  # Nice to have
+    risk_reduction: 6  # Operational knowledge
+    wsjf_score: 6.5
+    status: "READY"
+    risk_tier: "low"
+    created_at: "2025-07-24"
+    links:
+      - "src/lexgraph_legal_rag/http_client.py"
+      - "BACKLOG.md#circuit-breaker-docs"
+
+  # LOW PRIORITY ITEMS (WSJF < 4)
+  
+  - id: "westlaw-integration"
+    title: "Integrate with Westlaw/LexisNexis APIs"
+    type: "feature"
+    description: "Add external legal database integration for expanded content"
+    acceptance_criteria:
+      - "Research Westlaw API capabilities and pricing"
+      - "Design integration architecture"
+      - "Implement authentication and rate limiting"
+      - "Add content synchronization pipeline"
+      - "Create comprehensive test suite"
+    effort: 8
+    value: 8  # Feature expansion
+    time_criticality: 2  # Future roadmap
+    risk_reduction: 2  # Not critical
+    wsjf_score: 1.5
+    status: "NEW"
+    risk_tier: "low"
+    created_at: "2025-07-24"
+    links: []
+  
+  - id: "multi-jurisdiction"
+    title: "Add Multi-jurisdiction Support"
+    type: "feature"
+    description: "Support legal documents from multiple jurisdictions"
+    acceptance_criteria:
+      - "Design jurisdiction taxonomy"
+      - "Implement jurisdiction-aware search"
+      - "Add jurisdiction-specific legal reasoning"
+      - "Create jurisdiction migration tools"
+      - "Add comprehensive testing"
+    effort: 8
+    value: 7  # Market expansion
+    time_criticality: 2  # Future feature
+    risk_reduction: 2  # Not critical
+    wsjf_score: 1.4
+    status: "NEW"
+    risk_tier: "low"
+    created_at: "2025-07-24"
+    links: []
+
+# COMPLETED ITEMS (for reference and pattern learning)
+completed:
+  - id: "cors-security-fix"
+    title: "Fix CORS Security Vulnerability"
+    wsjf_score: 9.5
+    completed_at: "2025-07-20"
+    impact: "Critical security fix deployed"
+    
+  - id: "ci-performance-optimization"
+    title: "Optimize CI/CD Test Execution Performance"
+    wsjf_score: 10.0
+    completed_at: "2025-07-20"
+    impact: "Test execution time reduced from 120s+ to 18s"
+    
+  - id: "correlation-id-tracing"
+    title: "Implement Request Tracing with Correlation IDs"
+    wsjf_score: 8.0
+    completed_at: "2025-07-20"
+    impact: "Full correlation ID support implemented"
+
+# BLOCKED ITEMS
+blocked: []
+
+# AGING MULTIPLIERS (applied to stale items)
+aging_rules:
+  high_priority_days: 7
+  medium_priority_days: 14
+  low_priority_days: 30
+  max_multiplier: 2.0
+
+# CONTINUOUS DISCOVERY PATTERNS
+discovery_patterns:
+  todo_keywords: ["TODO", "FIXME", "HACK", "XXX", "BUG"]
+  coverage_threshold: 80
+  test_patterns: ["test_*.py", "*_test.py"]
+  security_patterns: ["bandit-report.json", "security-report.json"]
