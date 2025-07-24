@@ -7,7 +7,7 @@ from fastapi.openapi.utils import get_openapi
 import os
 import time
 from collections import deque
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Dict, Any, Optional
 
 import logging
@@ -149,39 +149,41 @@ logger = logging.getLogger(__name__)
 
 class PingResponse(BaseModel):
     """Response model for ping endpoint."""
-    version: str = Field(..., description="API version", example="v1")
-    ping: str = Field(..., description="Ping response", example="pong")
+    version: str = Field(..., description="API version", examples=["v1"])
+    ping: str = Field(..., description="Ping response", examples=["pong"])
     timestamp: Optional[float] = Field(None, description="Response timestamp")
 
-    class Config:
-        schema_extra = {
-            "example": {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [{
                 "version": "v1",
                 "ping": "pong",
                 "timestamp": 1234567890.123
-            }
+            }]
         }
+    )
 
 
 class AddResponse(BaseModel):
     """Response model for addition endpoint."""
-    result: int = Field(..., description="Sum of the two integers", example=42)
+    result: int = Field(..., description="Sum of the two integers", examples=[42])
 
-    class Config:
-        schema_extra = {
-            "example": {"result": 42}
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [{"result": 42}]
         }
+    )
 
 
 class HealthResponse(BaseModel):
     """Response model for health check endpoint."""
-    status: str = Field(..., description="Health status", example="healthy")
-    version: str = Field(..., description="API version", example="v1")
+    status: str = Field(..., description="Health status", examples=["healthy"])
+    version: str = Field(..., description="API version", examples=["v1"])
     checks: Dict[str, Any] = Field(..., description="Individual health checks")
 
-    class Config:
-        schema_extra = {
-            "example": {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [{
                 "status": "healthy",
                 "version": "v1",
                 "checks": {
@@ -189,8 +191,9 @@ class HealthResponse(BaseModel):
                     "supported_versions": ["v1", "v2"],
                     "timestamp": 1234567890.123
                 }
-            }
+            }]
         }
+    )
 
 
 class ReadinessResponse(BaseModel):
@@ -198,9 +201,9 @@ class ReadinessResponse(BaseModel):
     ready: bool = Field(..., description="Whether the service is ready to handle requests")
     checks: Dict[str, Any] = Field(..., description="Readiness check results")
 
-    class Config:
-        schema_extra = {
-            "example": {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [{
                 "ready": True,
                 "checks": {
                     "api_key": {"status": "pass"},
@@ -208,8 +211,9 @@ class ReadinessResponse(BaseModel):
                     "cache": {"status": "pass", "hit_rate": 0.85},
                     "external_services": {"status": "pass", "message": "All services available"}
                 }
-            }
+            }]
         }
+    )
 
 
 class KeyRotationRequest(BaseModel):
@@ -218,13 +222,14 @@ class KeyRotationRequest(BaseModel):
         ..., 
         min_length=8,
         description="New API key to add to the active set",
-        example="new-secure-api-key-123"
+        examples=["new-secure-api-key-123"]
     )
 
-    class Config:
-        schema_extra = {
-            "example": {"new_primary_key": "new-secure-api-key-123"}
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [{"new_primary_key": "new-secure-api-key-123"}]
         }
+    )
 
 
 class KeyRevocationRequest(BaseModel):
@@ -233,13 +238,14 @@ class KeyRevocationRequest(BaseModel):
         ...,
         min_length=8, 
         description="API key to revoke",
-        example="old-api-key-to-revoke"
+        examples=["old-api-key-to-revoke"]
     )
 
-    class Config:
-        schema_extra = {
-            "example": {"api_key": "old-api-key-to-revoke"}
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [{"api_key": "old-api-key-to-revoke"}]
         }
+    )
 
 
 class KeyManagementResponse(BaseModel):
@@ -247,9 +253,9 @@ class KeyManagementResponse(BaseModel):
     message: str = Field(..., description="Operation result message")
     rotation_info: Dict[str, Any] = Field(..., description="Key rotation statistics")
 
-    class Config:
-        schema_extra = {
-            "example": {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [{
                 "message": "Key rotation completed successfully",
                 "rotation_info": {
                     "active_keys": 3,
@@ -257,8 +263,9 @@ class KeyManagementResponse(BaseModel):
                     "last_rotation": 1234567890.123,
                     "days_since_rotation": 0.001
                 }
-            }
+            }]
         }
+    )
 
 
 class VersionInfo(BaseModel):
@@ -268,15 +275,16 @@ class VersionInfo(BaseModel):
     latest_version: str = Field(..., description="Latest API version")
     current_version: str = Field(..., description="Currently negotiated version")
 
-    class Config:
-        schema_extra = {
-            "example": {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [{
                 "supported_versions": ["v1", "v2"],
                 "default_version": "v1",
                 "latest_version": "v2",
                 "current_version": "v1"
-            }
+            }]
         }
+    )
 
 
 def create_api(
@@ -392,8 +400,8 @@ def create_api(
         @router.get("/add", response_model=AddResponse, tags=["Utilities"])
         async def add(
             request: Request,
-            a: int = Query(..., description="First integer", example=5),
-            b: int = Query(..., description="Second integer", example=7)
+            a: int = Query(..., description="First integer", examples=[5]),
+            b: int = Query(..., description="Second integer", examples=[7])
         ) -> AddResponse:
             """Add two integers together.
             
