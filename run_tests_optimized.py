@@ -16,7 +16,7 @@ def run_test_group(test_files, group_name, timeout=60):
     start_time = time.time()
     
     cmd = [
-        'python', '-m', 'pytest', 
+        'python3', '-m', 'pytest', 
         '-n', 'auto',  # parallel execution
         '--dist', 'loadfile',  # distribute by file
         '--tb=short',  # short traceback
@@ -33,7 +33,7 @@ def run_test_group(test_files, group_name, timeout=60):
             capture_output=True, 
             text=True,
             cwd='/root/repo',
-            env={'PATH': '/root/repo/venv/bin:' + subprocess.os.environ.get('PATH', '')}
+            env={'PATH': '/root/repo/venv/bin:' + subprocess.os.environ.get('PATH', ''), 'PYTHONPATH': '/root/repo/src'}
         )
         
         elapsed = time.time() - start_time
