@@ -302,6 +302,361 @@ async def process_legal_documents(documents: List[str]) -> List[Dict]:
     return results
 ```
 
+## Operational Runbook
+
+### Circuit Breaker Events Response Guide
+
+#### Event: Circuit Opens
+**Trigger**: `failure_count >= failure_threshold`
+
+**Immediate Actions** (within 2 minutes):
+1. **Alert Acknowledgment**: Acknowledge the alert and notify team
+2. **Service Health Check**: Verify external service status via:
+   ```bash
+   curl -I https://external-service.com/health
+   ```
+3. **Check System Logs**: Review recent error patterns:
+   ```bash
+   grep "Circuit breaker opened" /var/log/app.log | tail -10
+   ```
+4. **User Communication**: If critical service, notify users of degraded functionality
+
+**Investigation Steps** (within 5 minutes):
+1. **Network Connectivity**: Test basic connectivity
+   ```bash
+   ping external-service.com
+   traceroute external-service.com
+   ```
+2. **Authentication**: Verify API credentials are valid
+3. **Service Status Page**: Check if service provider reports outages
+4. **Resource Usage**: Check if local system resources are exhausted
+
+**Recovery Actions**:
+- If service is healthy: Review and potentially adjust `failure_threshold`
+- If service is down: Wait for service recovery or implement fallback
+- If network issues: Engage network operations team
+
+#### Event: Circuit Half-Opens
+**Trigger**: `recovery_timeout` elapsed after circuit opened
+
+**Actions**:
+1. **Monitor Test Requests**: Watch for successful recovery attempts
+2. **Prepare for Failure**: Circuit may reopen if tests fail
+3. **Log Analysis**: Review what caused the initial failures
+
+#### Event: Circuit Closes
+**Trigger**: `success_count >= success_threshold` in HALF_OPEN state
+
+**Actions**:
+1. **Verify Normal Operation**: Confirm requests flowing normally
+2. **Clear Alerts**: Resolve related monitoring alerts
+3. **Post-Incident Review**: Schedule review if outage was significant
+
+### Troubleshooting Guide
+
+#### Problem: Circuit Opens Too Frequently
+**Symptoms**: Circuit repeatedly opens under normal load
+
+**Root Causes & Solutions**:
+- **Low failure_threshold**: Increase threshold for the service
+- **Network instability**: Work with network team to resolve connectivity issues
+- **Service overload**: Coordinate with service provider on capacity
+- **Authentication issues**: Verify and refresh API credentials
+
+**Diagnostic Commands**:
+```bash
+# Check failure patterns
+grep -C5 "Circuit breaker opened" /var/log/app.log
+
+# Monitor real-time circuit state
+tail -f /var/log/app.log | grep -i circuit
+
+# Test service directly
+curl -w "@curl-format.txt" https://service.com/endpoint
+```
+
+#### Problem: Circuit Never Opens
+**Symptoms**: Service clearly failing but circuit stays closed
+
+**Root Causes & Solutions**:
+- **High failure_threshold**: Lower threshold for testing
+- **Wrong status codes**: Check if error codes are in retryable list
+- **Circuit not integrated**: Verify circuit breaker is actually being used
+
+**Diagnostic Steps**:
+1. Enable debug logging: Set log level to DEBUG
+2. Check retry configuration: Verify status codes trigger failures
+3. Test with lower threshold: Temporarily reduce `failure_threshold`
+
+#### Problem: Circuit Stuck in Half-Open
+**Symptoms**: Circuit doesn't transition to CLOSED or OPEN
+
+**Root Causes & Solutions**:
+- **Intermittent service issues**: Service failing sporadically during tests
+- **High success_threshold**: Reduce threshold for easier recovery
+- **Long recovery_timeout**: Adjust timeout for service characteristics
+
+#### Problem: False Positive Circuit Openings
+**Symptoms**: Circuit opens for temporary, recoverable issues
+
+**Root Causes & Solutions**:
+- **Aggressive retry config**: Increase max_retries and delays
+- **Status code misconfiguration**: Review which codes should be retryable
+- **Missing graceful degradation**: Implement fallback mechanisms
+
+## Monitoring and Alerting Configuration
+
+### Key Metrics to Track
+
+#### Circuit Breaker State Metrics
+```yaml
+# Prometheus metrics example
+- name: http_circuit_breaker_state
+  help: "Current state of circuit breaker (0=CLOSED, 1=OPEN, 2=HALF_OPEN)"
+  type: gauge
+  labels: [service_name, endpoint]
+
+- name: http_circuit_breaker_failures_total
+  help: "Total number of recorded failures"
+  type: counter
+  labels: [service_name, endpoint]
+
+- name: http_circuit_breaker_successes_total
+  help: "Total number of recorded successes"
+  type: counter
+  labels: [service_name, endpoint]
+```
+
+#### Request Performance Metrics
+```yaml
+- name: http_request_duration_seconds
+  help: "HTTP request duration"
+  type: histogram
+  labels: [service_name, endpoint, status_code]
+
+- name: http_requests_blocked_total
+  help: "Requests blocked by circuit breaker"
+  type: counter
+  labels: [service_name, endpoint]
+```
+
+### Alerting Rules
+
+#### Critical Alerts
+```yaml
+# Circuit Breaker Open Alert
+- alert: CircuitBreakerOpen
+  expr: http_circuit_breaker_state > 0
+  for: 1m
+  labels:
+    severity: critical
+  annotations:
+    summary: "Circuit breaker is open for {{ $labels.service_name }}"
+    description: "Circuit breaker has been open for {{ $labels.service_name }} service for more than 1 minute"
+    runbook_url: "https://docs.company.com/runbooks/circuit-breaker"
+
+# High Request Failure Rate
+- alert: HighHTTPFailureRate
+  expr: rate(http_circuit_breaker_failures_total[5m]) / rate(http_requests_total[5m]) > 0.1
+  for: 2m
+  labels:
+    severity: warning
+  annotations:
+    summary: "High failure rate for {{ $labels.service_name }}"
+    description: "Failure rate is {{ $value | humanizePercentage }} for {{ $labels.service_name }}"
+```
+
+#### Warning Alerts
+```yaml
+# Circuit Breaker Half-Open
+- alert: CircuitBreakerHalfOpen
+  expr: http_circuit_breaker_state == 2
+  for: 30s
+  labels:
+    severity: warning
+  annotations:
+    summary: "Circuit breaker is testing recovery for {{ $labels.service_name }}"
+    description: "Circuit breaker is in half-open state, testing service recovery"
+```
+
+### Dashboard Configuration
+
+#### Grafana Dashboard Panels
+```json
+{
+  "title": "Circuit Breaker Status",
+  "type": "stat",
+  "targets": [
+    {
+      "expr": "http_circuit_breaker_state",
+      "legendFormat": "{{ service_name }}"
+    }
+  ],
+  "fieldConfig": {
+    "mappings": [
+      {"value": 0, "text": "CLOSED", "color": "green"},
+      {"value": 1, "text": "OPEN", "color": "red"},
+      {"value": 2, "text": "HALF_OPEN", "color": "yellow"}
+    ]
+  }
+}
+```
+
+#### Request Success Rate Panel
+```json
+{
+  "title": "Request Success Rate",
+  "type": "graph",
+  "targets": [
+    {
+      "expr": "rate(http_circuit_breaker_successes_total[5m]) / (rate(http_circuit_breaker_successes_total[5m]) + rate(http_circuit_breaker_failures_total[5m]))",
+      "legendFormat": "{{ service_name }} Success Rate"
+    }
+  ]
+}
+```
+
+### Log Monitoring
+
+#### Important Log Patterns to Monitor
+```bash
+# Circuit state changes
+pattern: "Circuit breaker (opened|moved to|reopened)"
+action: Generate event for state change tracking
+
+# High frequency of blocked requests
+pattern: "Circuit breaker is open"
+threshold: > 10 occurrences per minute
+action: Alert on service unavailability impact
+
+# Recovery patterns
+pattern: "Circuit breaker moved to CLOSED"
+action: Clear related alerts and log recovery time
+```
+
+#### Log Aggregation Queries
+```javascript
+// ELK Stack query for circuit breaker events
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"match": {"message": "circuit breaker"}},
+        {"range": {"@timestamp": {"gte": "now-1h"}}}
+      ]
+    }
+  },
+  "aggs": {
+    "state_changes": {
+      "terms": {"field": "service_name"},
+      "aggs": {
+        "states": {"terms": {"field": "circuit_state"}}
+      }
+    }
+  }
+}
+```
+
+### Health Check Integration
+
+#### Application Health Endpoint
+```python
+@app.get("/health")
+async def health_check():
+    """Application health check including circuit breaker status."""
+    circuit_status = legal_client.get_circuit_status()
+    
+    health_status = {
+        "status": "healthy",
+        "services": {
+            "legal_api": {
+                "status": "healthy" if circuit_status['state'] == 'closed' else "degraded",
+                "circuit_state": circuit_status['state'],
+                "failure_count": circuit_status['failure_count']
+            }
+        }
+    }
+    
+    # Overall health based on critical services
+    if circuit_status['state'] == 'open':
+        health_status["status"] = "degraded"
+    
+    status_code = 200 if health_status["status"] == "healthy" else 503
+    return JSONResponse(content=health_status, status_code=status_code)
+```
+
+#### Load Balancer Integration
+```yaml
+# HAProxy health check configuration
+backend legal_service
+    option httpchk GET /health
+    http-check expect status 200
+    server app1 app1:8000 check inter 10s fall 3 rise 2
+```
+
+## Configuration Parameters Reference
+
+### Environment-Specific Recommendations
+
+#### Development Environment
+```python
+CircuitBreakerConfig(
+    failure_threshold=10,      # Higher tolerance for dev instability
+    recovery_timeout=30.0,     # Faster recovery for dev cycles
+    success_threshold=2        # Quick recovery
+)
+```
+
+#### Staging Environment
+```python
+CircuitBreakerConfig(
+    failure_threshold=5,       # Production-like sensitivity
+    recovery_timeout=60.0,     # Standard recovery time
+    success_threshold=3        # Conservative recovery
+)
+```
+
+#### Production Environment
+```python
+CircuitBreakerConfig(
+    failure_threshold=3,       # Low tolerance for failures
+    recovery_timeout=120.0,    # Allow time for proper recovery
+    success_threshold=5        # High confidence in recovery
+)
+```
+
+### Service-Specific Configuration
+
+#### Critical Legal APIs
+```python
+# Westlaw, LexisNexis, etc.
+CircuitBreakerConfig(
+    failure_threshold=2,       # Very sensitive
+    recovery_timeout=300.0,    # Allow time for service recovery
+    success_threshold=5        # High confidence required
+)
+```
+
+#### Secondary Data Sources
+```python
+# Case databases, law journals, etc.
+CircuitBreakerConfig(
+    failure_threshold=5,       # More tolerant
+    recovery_timeout=60.0,     # Standard recovery
+    success_threshold=3        # Standard confidence
+)
+```
+
+#### Internal Services
+```python
+# Document processing, indexing, etc.
+CircuitBreakerConfig(
+    failure_threshold=3,       # Moderate sensitivity
+    recovery_timeout=30.0,     # Quick recovery expected
+    success_threshold=2        # Quick restoration
+)
+```
+
 ---
 
 *This documentation covers the circuit breaker pattern implementation in the LexGraph Legal RAG system. For implementation details, see `src/lexgraph_legal_rag/http_client.py`.*
