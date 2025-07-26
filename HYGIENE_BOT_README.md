@@ -2,6 +2,8 @@
 
 Automated GitHub repository hygiene maintenance following security and community best practices.
 
+> **Note**: This bot creates GitHub Actions workflow files. If you're using a GitHub App token, ensure it has `workflows` permission, or manually create workflow files in `.github/workflows/`.
+
 ## ✨ Features
 
 - **Repository Metadata**: Updates descriptions, homepages, and topics
