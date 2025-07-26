@@ -113,11 +113,13 @@ backlog:
   time_criticality: 6
   risk_reduction: 8
   wsjf_score: 4.6
-  status: READY
+  status: DONE
   risk_tier: medium
   created_at: '2025-07-24'
+  completed_at: '2025-07-26'
   links:
   - src/lexgraph_legal_rag/faiss_index.py
+  - tests/test_faiss_index_comprehensive.py
   - TECH_DEBT.md#faiss-index-testing
 - id: circuit-breaker-docs
   title: Add Circuit Breaker Pattern Documentation
@@ -183,6 +185,66 @@ backlog:
   risk_tier: low
   created_at: '2025-07-24'
   links: []
+- id: document-pipeline-coverage
+  title: Implement comprehensive Document Pipeline test coverage
+  type: test-coverage
+  description: Document Pipeline has 12% coverage on 170 lines - core search functionality
+  acceptance_criteria:
+  - Achieve 80%+ test coverage on document_pipeline.py
+  - Test document indexing and search operations
+  - Test caching and cache invalidation logic
+  - Test batch search optimization
+  - Test error handling and edge cases
+  effort: 3
+  value: 10
+  time_criticality: 9
+  risk_reduction: 9
+  wsjf_score: 9.3
+  status: READY
+  risk_tier: medium
+  created_at: '2025-07-26'
+  links:
+  - src/lexgraph_legal_rag/document_pipeline.py
+- id: api-module-coverage
+  title: Implement comprehensive API module test coverage
+  type: test-coverage
+  description: API module has 21% coverage on 246 lines - core application interface
+  acceptance_criteria:
+  - Achieve 80%+ test coverage on api.py
+  - Test all API endpoints with FastAPI test client
+  - Test authentication and authorization flows
+  - Test request/response validation
+  - Test error handling and edge cases
+  effort: 5
+  value: 9
+  time_criticality: 7
+  risk_reduction: 8
+  wsjf_score: 4.8
+  status: READY
+  risk_tier: medium
+  created_at: '2025-07-26'
+  links:
+  - src/lexgraph_legal_rag/api.py
+- id: config-module-coverage
+  title: Implement Config module test coverage
+  type: test-coverage
+  description: Config module has 18% coverage on 73 lines - application configuration
+  acceptance_criteria:
+  - Achieve 80%+ test coverage on config.py
+  - Test configuration loading and validation
+  - Test environment variable handling
+  - Test default values and overrides
+  - Test configuration error scenarios
+  effort: 2
+  value: 6
+  time_criticality: 3
+  risk_reduction: 6
+  wsjf_score: 7.5
+  status: READY
+  risk_tier: low
+  created_at: '2025-07-26'
+  links:
+  - src/lexgraph_legal_rag/config.py
 completed:
 - id: cors-security-fix
   title: Fix CORS Security Vulnerability
@@ -229,6 +291,12 @@ completed:
   wsjf_score: 6.5
   completed_at: '2025-07-25'
   impact: Comprehensive circuit breaker documentation created - operations runbook, monitoring guide, troubleshooting procedures, and configuration reference
+
+- id: faiss-index-coverage
+  title: Improve FAISS Index module test coverage
+  wsjf_score: 4.6
+  completed_at: '2025-07-26'
+  impact: FAISS Index coverage increased from 19% to 97% with comprehensive test suite covering vector search operations, index pooling, persistence, error handling, and performance optimization
 blocked: []
 aging_rules:
   high_priority_days: 7
