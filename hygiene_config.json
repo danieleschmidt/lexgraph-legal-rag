@@ -1,0 +1,87 @@
+{
+  "metadata": {
+    "default_description_template": "A project by {owner} - {repo_name}",
+    "default_homepage_template": "https://{owner}.github.io",
+    "min_topics": 5,
+    "max_topics": 8
+  },
+  "topics": {
+    "language_based": {
+      "python": ["python", "automation", "api"],
+      "javascript": ["javascript", "web", "frontend"],
+      "typescript": ["typescript", "web", "frontend"],
+      "go": ["golang", "backend", "microservices"],
+      "rust": ["rust", "systems", "performance"],
+      "java": ["java", "enterprise", "backend"],
+      "dockerfile": ["docker", "containerization", "devops"]
+    },
+    "common": [
+      "open-source",
+      "github-actions", 
+      "ci-cd",
+      "automation",
+      "security",
+      "monitoring",
+      "testing",
+      "documentation"
+    ],
+    "patterns": {
+      "bot": ["automation"],
+      "api": ["api"],
+      "service": ["api"],
+      "security": ["security"],
+      "auth": ["security"]
+    }
+  },
+  "community_files": {
+    "required": [
+      "LICENSE",
+      "CODE_OF_CONDUCT.md",
+      "CONTRIBUTING.md", 
+      "SECURITY.md"
+    ],
+    "issue_templates": [
+      ".github/ISSUE_TEMPLATE/bug.yml",
+      ".github/ISSUE_TEMPLATE/feature.yml"
+    ]
+  },
+  "security": {
+    "workflows": [
+      ".github/workflows/codeql.yml",
+      ".github/workflows/scorecard.yml"
+    ],
+    "config_files": [
+      ".github/dependabot.yml"
+    ]
+  },
+  "sbom": {
+    "workflows": [
+      ".github/workflows/sbom.yml",
+      ".github/workflows/sbom-diff.yml"
+    ],
+    "output_path": "docs/sbom/latest.json"
+  },
+  "readme": {
+    "required_sections": [
+      "## ✨ Why this exists",
+      "## ⚡ Quick Start", 
+      "## 🔍 Key Features",
+      "## 🗺 Road Map",
+      "## 🤝 Contributing"
+    ],
+    "badges": [
+      "license",
+      "ci", 
+      "security",
+      "sbom"
+    ]
+  },
+  "archival": {
+    "stale_days": 400,
+    "target_repo_name": "Main-Project"
+  },
+  "pinning": {
+    "max_repos": 6,
+    "sort_by": "stargazers_count"
+  }
+}
