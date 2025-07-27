@@ -259,6 +259,45 @@ completed:
   wsjf_score: 15.0
   completed_at: '2025-07-26'
   impact: Resolved critical test failures enabling 70/71 tests to pass (98.6% success rate), fixed Prometheus metrics conflicts, and restored development workflow
+- id: missing-dependencies-fix  
+  title: Install Missing Dependencies for Test Suite
+  type: infrastructure
+  description: Missing psutil and other dependencies causing test failures
+  acceptance_criteria:
+  - Install psutil and other missing dependencies
+  - Ensure all 769 tests can run without import errors
+  - Verify test infrastructure is fully functional
+  effort: 1
+  value: 8
+  time_criticality: 9
+  risk_reduction: 8
+  wsjf_score: 25.0
+  status: DONE
+  risk_tier: medium
+  created_at: '2025-07-27'
+  completed_at: '2025-07-27'
+  links:
+  - requirements.txt
+- id: api-production-config-fix
+  title: Fix API Production Configuration Test Failures  
+  type: bug
+  description: API tests failing due to production mode configuration validation
+  acceptance_criteria:
+  - Fix production mode API key validation in tests
+  - Ensure proper test environment isolation
+  - Fix v2 endpoint routing issues
+  effort: 2
+  value: 7
+  time_criticality: 6
+  risk_reduction: 7
+  wsjf_score: 10.0
+  status: DONE
+  risk_tier: medium
+  created_at: '2025-07-27'
+  completed_at: '2025-07-27'
+  links:
+  - tests/test_api_additional_coverage.py
+  - src/lexgraph_legal_rag/config.py
 blocked: []
 aging_rules:
   high_priority_days: 7
