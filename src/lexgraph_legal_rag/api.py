@@ -416,7 +416,9 @@ def create_api(
             formatted_response = VersionedResponse.format_response(response_data, current_version)
             
             if current_version.version == "v2":
-                return formatted_response
+                # For v2, we need to extract the result from the formatted response 
+                # to match the AddResponse model structure
+                return AddResponse(result=formatted_response.get("data", {}).get("result", result))
             else:
                 return AddResponse(result=result)
         
@@ -588,11 +590,12 @@ def create_api(
     register_admin_routes(versioned_router)  # Admin routes with authentication
     app.include_router(versioned_router)
 
-    if version == SUPPORTED_VERSIONS[0]:
-        default_router = APIRouter(dependencies=dependencies)
-        register_routes(default_router)
-        register_admin_routes(default_router)  # Admin routes with authentication
-        app.include_router(default_router)
+    # Always include default routes (without version prefix) for backward compatibility
+    # and to support the expected test behavior
+    default_router = APIRouter(dependencies=dependencies)
+    register_routes(default_router)
+    register_admin_routes(default_router)  # Admin routes with authentication
+    app.include_router(default_router)
 
     # Validate configuration at startup
     validate_environment(allow_test_mode=test_mode)

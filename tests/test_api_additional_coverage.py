@@ -65,7 +65,7 @@ class TestAPIEdgeCases:
 
     def test_create_api_production_mode_with_env_key(self):
         """Test API creation in production mode with environment key."""
-        with patch.dict('os.environ', {API_KEY_ENV: 'production-key'}):
+        with patch.dict('os.environ', {API_KEY_ENV: 'production-api-key-16chars'}):
             app = create_api(test_mode=False)
             assert app.title == "LexGraph Legal RAG API"
 
@@ -312,6 +312,6 @@ class TestConfigurationValidation:
     @patch('lexgraph_legal_rag.api.validate_environment')
     def test_environment_validation_production(self, mock_validate):
         """Test environment validation called for production mode."""
-        with patch.dict('os.environ', {API_KEY_ENV: 'prod-key'}):
+        with patch.dict('os.environ', {API_KEY_ENV: 'production-valid-key-16plus'}):
             app = create_api(test_mode=False)
             mock_validate.assert_called_once_with(allow_test_mode=False)
