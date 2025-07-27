@@ -1,0 +1,105 @@
+# CodeQL configuration for LexGraph Legal RAG
+name: "LexGraph Legal RAG CodeQL Config"
+
+# Disable default queries and use custom query suites
+disable-default-queries: false
+
+# Custom query suites for enhanced security analysis
+queries:
+  - name: python-security-extended
+    uses: security-extended
+  - name: python-code-quality
+    uses: code-quality
+  - name: python-security-and-quality
+    uses: security-and-quality
+
+# Paths to analyze
+paths:
+  - src/
+  - tests/
+
+# Paths to ignore
+paths-ignore:
+  - "**/__pycache__"
+  - "**/*.pyc"
+  - "**/node_modules"
+  - "build/"
+  - "dist/"
+  - "docs/"
+  - ".git/"
+  - ".venv/"
+  - "venv/"
+  - "*.md"
+  - "*.txt"
+  - "*.yml"
+  - "*.yaml"
+  - "*.json"
+  - "Dockerfile"
+  - "docker-compose.yml"
+
+# Language-specific settings
+python:
+  # Additional Python-specific configuration
+  setup-python-dependencies: true
+  
+# Custom packs for additional analysis
+packs:
+  python:
+    - codeql/python-queries
+    - codeql/python-security-queries
+
+# Build configuration
+build:
+  # Commands to run before analysis
+  before-prepare:
+    - echo "Setting up CodeQL analysis environment"
+  
+  # Commands to prepare the build
+  prepare:
+    - python -m pip install --upgrade pip
+    - pip install -r requirements.txt
+  
+  # Commands to run after analysis
+  after-prepare:
+    - echo "CodeQL analysis environment ready"
+
+# Query filters to reduce noise
+query-filters:
+  - exclude:
+      id: py/unused-import
+      reason: "Too many false positives in test files"
+  - exclude:
+      id: py/unused-local-variable
+      reason: "Acceptable in development code"
+
+# ML-powered alerts (if available)
+ml-powered-queries: true
+
+# Additional security-focused configuration
+security:
+  # Enable all security-related queries
+  enable-security-queries: true
+  
+  # Severity levels to include
+  severity-levels:
+    - error
+    - warning
+    - note
+  
+  # Security categories to focus on
+  categories:
+    - security
+    - correctness
+    - maintainability
+    - reliability
+
+# Performance settings
+performance:
+  # Timeout for analysis (in minutes)
+  timeout: 30
+  
+  # Memory limit (if supported)
+  memory-limit: "4G"
+  
+  # Thread count
+  threads: 0  # Use all available threads

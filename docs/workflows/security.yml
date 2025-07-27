@@ -1,0 +1,419 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 6 AM UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # SAST - Static Application Security Testing
+  sast:
+    name: Static Application Security Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit[toml] safety semgrep
+        
+    - name: Run Bandit security scan
+      run: |
+        bandit -r src/ -f json -o bandit-report.json
+        bandit -r src/ -f sarif -o bandit-results.sarif
+      continue-on-error: true
+      
+    - name: Run Safety dependency scan
+      run: |
+        safety check --json --output safety-report.json
+        safety check --output safety-report.txt
+      continue-on-error: true
+      
+    - name: Run Semgrep scan
+      run: |
+        semgrep --config=auto src/ --json --output=semgrep-report.json
+        semgrep --config=auto src/ --sarif --output=semgrep-results.sarif
+      continue-on-error: true
+      
+    - name: Upload Bandit SARIF results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: bandit-results.sarif
+        category: bandit
+        
+    - name: Upload Semgrep SARIF results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: semgrep-results.sarif
+        category: semgrep
+        
+    - name: Upload security reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: sast-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+          safety-report.txt
+          semgrep-report.json
+        retention-days: 30
+
+  # CodeQL Analysis
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python', 'javascript' ]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        config-file: ./.github/codeql/codeql-config.yml
+        
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+      
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"
+
+  # Dependency Scanning
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      security-events: write
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+        category: trivy
+        
+    - name: Run OSV-Scanner
+      uses: google/osv-scanner-action@v1
+      with:
+        scan-args: |
+          -r
+          --format=sarif
+          --output=osv-results.sarif
+          .
+      continue-on-error: true
+      
+    - name: Upload OSV scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'osv-results.sarif'
+        category: osv
+
+  # Container Security Scanning
+  container-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      security-events: write
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        target: production
+        push: false
+        tags: lexgraph-legal-rag:security-scan
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Run Trivy container scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'lexgraph-legal-rag:security-scan'
+        format: 'sarif'
+        output: 'trivy-container-results.sarif'
+        
+    - name: Upload Trivy container scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-container-results.sarif'
+        category: trivy-container
+        
+    - name: Run Docker Scout
+      uses: docker/scout-action@v1
+      if: github.event_name != 'pull_request'
+      with:
+        command: cves
+        image: lexgraph-legal-rag:security-scan
+        sarif-file: scout-results.sarif
+        
+    - name: Upload Docker Scout results
+      uses: github/codeql-action/upload-sarif@v3
+      if: github.event_name != 'pull_request' && always()
+      with:
+        sarif_file: 'scout-results.sarif'
+        category: docker-scout
+
+  # Secrets Scanning
+  secrets-scan:
+    name: Secrets Scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Run GitGuardian scan
+      uses: GitGuardian/ggshield-action@v1
+      env:
+        GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
+        GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
+        GITHUB_PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+      continue-on-error: true
+      
+    - name: Run TruffleHog scan
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: ${{ github.event.repository.default_branch }}
+        head: HEAD
+        extra_args: --debug --only-verified
+      continue-on-error: true
+
+  # Infrastructure as Code Security
+  iac-scan:
+    name: Infrastructure as Code Security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Checkov scan
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: .
+        framework: dockerfile,kubernetes,github_actions
+        output_format: sarif
+        output_file_path: checkov-results.sarif
+      continue-on-error: true
+      
+    - name: Upload Checkov scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'checkov-results.sarif'
+        category: checkov
+        
+    - name: Run KICS scan
+      uses: checkmarx/kics-github-action@v1.7.0
+      with:
+        path: '.'
+        output_path: kics-results.sarif
+        output_formats: 'sarif'
+        exclude_paths: '.git'
+      continue-on-error: true
+      
+    - name: Upload KICS scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'kics-results.sarif'
+        category: kics
+
+  # SBOM Generation
+  sbom:
+    name: Generate Software Bill of Materials
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Generate SBOM with Syft
+      uses: anchore/sbom-action@v0
+      with:
+        path: .
+        format: spdx-json
+        
+    - name: Generate SBOM with CycloneDX
+      run: |
+        pip install cyclonedx-bom
+        cyclonedx-py -o cyclonedx-sbom.json
+      continue-on-error: true
+      
+    - name: Upload SBOM artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom
+        path: |
+          ${{ steps.sbom.outputs.fileName }}
+          cyclonedx-sbom.json
+        retention-days: 90
+
+  # Security Policy Validation
+  policy-validation:
+    name: Security Policy Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Validate security policies
+      run: |
+        echo "Validating security policies..."
+        
+        # Check for required security files
+        required_files=(
+          "SECURITY.md"
+          ".github/workflows/security.yml"
+          "src/lexgraph_legal_rag/auth.py"
+        )
+        
+        for file in "${required_files[@]}"; do
+          if [[ ! -f "$file" ]]; then
+            echo "❌ Missing required security file: $file"
+            exit 1
+          else
+            echo "✅ Found security file: $file"
+          fi
+        done
+        
+        # Check for security configuration
+        if grep -q "API_KEY" src/lexgraph_legal_rag/*.py; then
+          echo "✅ API key authentication found"
+        else
+          echo "❌ No API key authentication found"
+          exit 1
+        fi
+        
+        echo "✅ All security policy validations passed"
+
+  # Security Report Summary
+  security-summary:
+    name: Security Report Summary
+    runs-on: ubuntu-latest
+    needs: [sast, codeql, dependency-scan, container-scan, secrets-scan, iac-scan, policy-validation]
+    if: always()
+    timeout-minutes: 10
+    
+    steps:
+    - name: Create security summary
+      run: |
+        echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Scan Type | Status | Details |" >> $GITHUB_STEP_SUMMARY
+        echo "|-----------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+        echo "| SAST | ${{ needs.sast.result }} | Static Application Security Testing |" >> $GITHUB_STEP_SUMMARY
+        echo "| CodeQL | ${{ needs.codeql.result }} | GitHub CodeQL Analysis |" >> $GITHUB_STEP_SUMMARY
+        echo "| Dependencies | ${{ needs.dependency-scan.result }} | Vulnerability scanning of dependencies |" >> $GITHUB_STEP_SUMMARY
+        echo "| Container | ${{ needs.container-scan.result }} | Docker image security scanning |" >> $GITHUB_STEP_SUMMARY
+        echo "| Secrets | ${{ needs.secrets-scan.result }} | Secret detection and scanning |" >> $GITHUB_STEP_SUMMARY
+        echo "| IaC | ${{ needs.iac-scan.result }} | Infrastructure as Code security |" >> $GITHUB_STEP_SUMMARY
+        echo "| Policy | ${{ needs.policy-validation.result }} | Security policy validation |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📊 Scan Results" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔗 Security Resources" >> $GITHUB_STEP_SUMMARY
+        echo "- [Security Policy](SECURITY.md)" >> $GITHUB_STEP_SUMMARY
+        echo "- [Security Advisories](https://github.com/${{ github.repository }}/security/advisories)" >> $GITHUB_STEP_SUMMARY
+        echo "- [Dependabot Alerts](https://github.com/${{ github.repository }}/security/dependabot)" >> $GITHUB_STEP_SUMMARY
+        
+    - name: Security gate check
+      run: |
+        failed_scans=()
+        
+        if [[ "${{ needs.sast.result }}" == "failure" ]]; then
+          failed_scans+=("SAST")
+        fi
+        
+        if [[ "${{ needs.policy-validation.result }}" == "failure" ]]; then
+          failed_scans+=("Policy Validation")
+          echo "❌ Critical security policy validation failed"
+          exit 1
+        fi
+        
+        if [[ ${#failed_scans[@]} -gt 0 ]]; then
+          echo "⚠️  Some security scans failed: ${failed_scans[*]}"
+          echo "Review the security findings and address critical vulnerabilities."
+        else
+          echo "✅ All security scans completed successfully"
+        fi
