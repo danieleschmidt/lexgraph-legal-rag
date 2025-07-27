@@ -1,0 +1,203 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! We appreciate your input in making LexGraph Legal RAG better.
+        
+        **Before submitting**, please:
+        - Search existing issues to avoid duplicates
+        - Check the [roadmap](docs/ROADMAP.md) to see if it's already planned
+        - Consider if this might be better suited as a discussion in our [community forum](https://community.terragon.ai)
+
+  - type: dropdown
+    id: feature_type
+    attributes:
+      label: Feature Type
+      description: What type of feature are you requesting?
+      options:
+        - New API endpoint
+        - UI/UX improvement
+        - Performance enhancement
+        - Integration with external service
+        - Developer tooling
+        - Documentation improvement
+        - Other (please specify)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What is the current limitation?
+      placeholder: "Currently, users cannot... This creates a problem because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the feature you'd like to see implemented.
+      placeholder: "I would like to see... This would work by..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Have you considered any alternative approaches?
+      placeholder: "Other options could include..."
+
+  - type: textarea
+    id: use_cases
+    attributes:
+      label: Use Cases
+      description: Provide specific examples of how this feature would be used.
+      placeholder: |
+        1. As a lawyer, I want to... so that I can...
+        2. As a developer, I need to... in order to...
+        3. As a compliance officer, I would like to...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user_type
+    attributes:
+      label: Primary User Type
+      description: Who would primarily benefit from this feature?
+      options:
+        - Legal professionals
+        - Developers/Integrators
+        - Compliance officers
+        - Legal researchers
+        - Business users
+        - System administrators
+        - All users
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Low (nice to have)
+        - Medium (would improve workflow)
+        - High (significant impact on productivity)
+        - Critical (blocking current work)
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockup
+    attributes:
+      label: Mockups/Wireframes
+      description: If applicable, provide mockups, wireframes, or visual examples.
+      placeholder: "Attach images or provide links to mockups..."
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What would need to be true for this feature to be considered complete?
+      placeholder: |
+        - [ ] Users can...
+        - [ ] The system should...
+        - [ ] Performance should...
+        - [ ] Documentation includes...
+
+  - type: input
+    id: api_design
+    attributes:
+      label: API Design (if applicable)
+      description: If this involves API changes, suggest the endpoint design.
+      placeholder: "GET /v1/new-endpoint?param=value"
+
+  - type: textarea
+    id: technical_considerations
+    attributes:
+      label: Technical Considerations
+      description: Any technical details, constraints, or implementation notes?
+      placeholder: |
+        - Database changes required
+        - Performance implications
+        - Security considerations
+        - Backward compatibility
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Estimated Complexity
+      description: How complex do you think this feature would be to implement?
+      options:
+        - Small (few hours)
+        - Medium (few days)
+        - Large (few weeks)
+        - Extra Large (few months)
+        - Unknown
+    validations:
+      required: false
+
+  - type: textarea
+    id: business_value
+    attributes:
+      label: Business Value
+      description: What business value would this feature provide?
+      placeholder: |
+        - Increased user productivity
+        - Reduced support burden
+        - Competitive advantage
+        - Compliance requirement
+        - Revenue impact
+
+  - type: input
+    id: deadline
+    attributes:
+      label: Deadline (if any)
+      description: Is there a specific deadline or timeline for this feature?
+      placeholder: "e.g., Q2 2024, Before summer release, No specific deadline"
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Any other context, links, or information about this feature request?
+      placeholder: "Links to related issues, external documentation, etc..."
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you interested in contributing to this feature?
+      options:
+        - label: I would like to help implement this feature
+          required: false
+        - label: I can provide design/UX input
+          required: false
+        - label: I can help with testing
+          required: false
+        - label: I can provide domain expertise
+          required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Submission Checklist
+      description: Please confirm the following before submitting:
+      options:
+        - label: I have searched for existing feature requests describing this idea
+          required: true
+        - label: I have checked the roadmap to ensure this isn't already planned
+          required: true
+        - label: I have provided clear use cases for this feature
+          required: true
+        - label: I understand this request will be triaged and prioritized
+          required: true
