@@ -1,17 +1,37 @@
 # Multi-stage Docker build for LexGraph Legal RAG
 FROM python:3.11-slim as base
 
+# Set build arguments
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+
+# Add image labels for metadata
+LABEL org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.name="lexgraph-legal-rag" \
+      org.label-schema.description="LangGraph-powered multi-agent legal document analysis system" \
+      org.label-schema.url="https://github.com/terragon-labs/lexgraph-legal-rag" \
+      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.vcs-url="https://github.com/terragon-labs/lexgraph-legal-rag" \
+      org.label-schema.vendor="Terragon Labs" \
+      org.label-schema.version=$VERSION \
+      org.label-schema.schema-version="1.0"
+
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONPATH=/app/src
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies with security updates
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    ca-certificates \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Create application user for security
 RUN groupadd --gid 1000 appuser && \
