@@ -113,12 +113,19 @@ Based on the implementation, the repository now achieves:
 
 ## 🔧 Workflow Configuration
 
-### GitHub Actions Workflows
+### GitHub Actions Workflows (Manual Setup Required)
+
+⚠️ **Note**: GitHub Actions workflows need to be added manually due to repository permissions.
+
+The following workflow files need to be created in `.github/workflows/`:
+
 1. **ci.yml**: Comprehensive CI with testing, linting, and security
-2. **cd.yml**: Automated deployment to staging and production
+2. **cd.yml**: Automated deployment to staging and production  
 3. **security.yml**: Daily security scanning and vulnerability reporting
 4. **dependencies.yml**: Automated dependency management and updates
 5. **release.yml**: Semantic release management with notifications
+
+**Manual Setup Instructions**: Create the `.github/workflows/` directory and add the workflow files using the GitHub web interface or by pushing them manually with appropriate permissions.
 
 ### Pre-commit Hooks
 - **Black**: Code formatting
