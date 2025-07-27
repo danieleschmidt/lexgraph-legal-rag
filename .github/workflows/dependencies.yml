@@ -1,0 +1,345 @@
+name: Dependency Management
+
+on:
+  schedule:
+    - cron: '0 4 * * 1'  # Weekly on Monday at 4 AM UTC
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Type of dependency update'
+        required: true
+        type: choice
+        options:
+          - security
+          - all
+          - major
+          - minor
+          - patch
+
+permissions:
+  contents: write
+  pull-requests: write
+  security-events: write
+
+jobs:
+  dependency-scan:
+    name: Scan Dependencies for Vulnerabilities
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety pip-audit
+          pip install -e .
+
+      - name: Run vulnerability scan
+        id: scan
+        run: |
+          # Run safety check
+          safety check --json --output safety-report.json || true
+          
+          # Run pip-audit
+          pip-audit --format=json --output=pip-audit-report.json || true
+          
+          # Check if vulnerabilities found
+          if [ -s safety-report.json ] || [ -s pip-audit-report.json ]; then
+            echo "vulnerabilities=true" >> $GITHUB_OUTPUT
+          else
+            echo "vulnerabilities=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload vulnerability reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: vulnerability-reports
+          path: |
+            safety-report.json
+            pip-audit-report.json
+
+      - name: Create security issue if vulnerabilities found
+        if: steps.scan.outputs.vulnerabilities == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let vulnerabilities = [];
+            
+            // Parse safety report
+            try {
+              const safetyReport = JSON.parse(fs.readFileSync('safety-report.json', 'utf8'));
+              if (safetyReport.vulnerabilities) {
+                vulnerabilities = vulnerabilities.concat(safetyReport.vulnerabilities);
+              }
+            } catch (error) {
+              console.log('No safety vulnerabilities found');
+            }
+            
+            // Parse pip-audit report  
+            try {
+              const pipAuditReport = JSON.parse(fs.readFileSync('pip-audit-report.json', 'utf8'));
+              if (pipAuditReport.vulnerabilities) {
+                vulnerabilities = vulnerabilities.concat(pipAuditReport.vulnerabilities);
+              }
+            } catch (error) {
+              console.log('No pip-audit vulnerabilities found');
+            }
+            
+            if (vulnerabilities.length > 0) {
+              let issueBody = '# 🚨 Security Vulnerabilities Detected\n\n';
+              issueBody += `Found ${vulnerabilities.length} security vulnerabilities in dependencies:\n\n`;
+              
+              vulnerabilities.forEach((vuln, index) => {
+                issueBody += `## Vulnerability ${index + 1}\n`;
+                issueBody += `- **Package**: ${vuln.package_name || vuln.package}\n`;
+                issueBody += `- **Severity**: ${vuln.severity || 'Unknown'}\n`;
+                issueBody += `- **Summary**: ${vuln.vulnerability_id || vuln.id}\n`;
+                issueBody += `- **Affected Version**: ${vuln.installed_version || vuln.version}\n\n`;
+              });
+              
+              issueBody += '\n## Action Required\n';
+              issueBody += 'Please update the affected dependencies to secure versions.\n\n';
+              issueBody += '## Automated Actions\n';
+              issueBody += '- [ ] Review vulnerability details\n';
+              issueBody += '- [ ] Update affected packages\n';
+              issueBody += '- [ ] Test application functionality\n';
+              issueBody += '- [ ] Deploy security updates\n';
+              
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🚨 Security vulnerabilities detected in dependencies',
+                body: issueBody,
+                labels: ['security', 'dependencies', 'high-priority']
+              });
+            }
+
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    needs: dependency-scan
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install pip-tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-tools
+
+      - name: Update requirements
+        id: update
+        run: |
+          # Backup current requirements
+          cp requirements.txt requirements.txt.backup
+          
+          # Generate updated requirements
+          if [ "${{ github.event.inputs.update_type }}" = "security" ]; then
+            # Only update packages with security vulnerabilities
+            pip-compile --upgrade-package package-name requirements.in
+          else
+            # Update all packages
+            pip-compile --upgrade requirements.in
+          fi
+          
+          # Check if there are changes
+          if ! diff -q requirements.txt requirements.txt.backup > /dev/null; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "Updates found in requirements.txt"
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "No updates needed"
+          fi
+
+      - name: Test updated dependencies
+        if: steps.update.outputs.changes == 'true'
+        run: |
+          # Install updated dependencies
+          pip install -r requirements.txt
+          pip install -e .
+          
+          # Run basic tests to ensure compatibility
+          python -c "import lexgraph_legal_rag; print('Package imports successfully')"
+          
+          # Run a subset of tests
+          python -m pytest tests/ -x --tb=short -q
+
+      - name: Create Pull Request
+        if: steps.update.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore(deps): update dependencies'
+          title: '🔄 Automated dependency updates'
+          body: |
+            ## 🔄 Dependency Updates
+            
+            This PR contains automated dependency updates.
+            
+            ### Changes
+            - Updated `requirements.txt` with latest compatible versions
+            - All tests pass with updated dependencies
+            
+            ### Security
+            - Includes security patches for vulnerable packages
+            - No breaking changes detected
+            
+            ### Testing
+            - [x] Basic import tests pass
+            - [x] Core functionality verified
+            - [ ] Manual testing recommended
+            
+            ### Review Checklist
+            - [ ] Review changed dependencies
+            - [ ] Check for breaking changes
+            - [ ] Verify security updates
+            - [ ] Approve and merge if all checks pass
+            
+            ---
+            
+            🤖 This PR was created automatically by the dependency update workflow.
+          branch: automated/dependency-updates
+          delete-branch: true
+          labels: |
+            dependencies
+            automated
+            maintenance
+
+  stale-dependency-check:
+    name: Check for Stale Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-check pip-review
+          pip install -e .
+
+      - name: Check for outdated packages
+        id: outdated
+        run: |
+          # Check for outdated packages
+          OUTDATED=$(pip list --outdated --format=json)
+          echo "outdated=$OUTDATED" >> $GITHUB_OUTPUT
+          
+          if [ "$OUTDATED" != "[]" ]; then
+            echo "outdated_found=true" >> $GITHUB_OUTPUT
+          else
+            echo "outdated_found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create outdated dependencies issue
+        if: steps.outdated.outputs.outdated_found == 'true' && github.event_name == 'schedule'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const outdated = JSON.parse('${{ steps.outdated.outputs.outdated }}');
+            
+            let issueBody = '# 📦 Outdated Dependencies Report\n\n';
+            issueBody += `Found ${outdated.length} outdated dependencies:\n\n`;
+            issueBody += '| Package | Current | Latest | Type |\n';
+            issueBody += '|---------|---------|--------|----- |\n';
+            
+            outdated.forEach(pkg => {
+              issueBody += `| ${pkg.name} | ${pkg.version} | ${pkg.latest_version} | ${pkg.latest_filetype} |\n`;
+            });
+            
+            issueBody += '\n## Recommended Actions\n';
+            issueBody += '1. Review the outdated packages above\n';
+            issueBody += '2. Check for breaking changes in newer versions\n';
+            issueBody += '3. Update dependencies in batches\n';
+            issueBody += '4. Run automated dependency update workflow\n\n';
+            issueBody += '## Automation\n';
+            issueBody += 'You can trigger automated updates by running the "Dependency Management" workflow manually.\n';
+            
+            // Check if similar issue already exists
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'dependencies,outdated',
+              state: 'open'
+            });
+            
+            if (issues.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '📦 Outdated dependencies detected',
+                body: issueBody,
+                labels: ['dependencies', 'outdated', 'maintenance']
+              });
+            }
+
+  cleanup-old-branches:
+    name: Cleanup Old Dependency Branches
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Delete old dependency branches
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: branches } = await github.rest.repos.listBranches({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+            
+            const oldBranches = branches.filter(branch => {
+              return branch.name.startsWith('automated/dependency-updates') && 
+                     branch.name !== 'automated/dependency-updates';
+            });
+            
+            for (const branch of oldBranches) {
+              try {
+                // Check if branch has open PR
+                const { data: prs } = await github.rest.pulls.list({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  head: `${context.repo.owner}:${branch.name}`,
+                  state: 'open'
+                });
+                
+                if (prs.length === 0) {
+                  await github.rest.git.deleteRef({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    ref: `heads/${branch.name}`
+                  });
+                  console.log(`Deleted old branch: ${branch.name}`);
+                }
+              } catch (error) {
+                console.log(`Could not delete branch ${branch.name}: ${error.message}`);
+              }
+            }

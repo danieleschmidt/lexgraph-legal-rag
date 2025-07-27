@@ -1,0 +1,134 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: FastAPI App",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/lexgraph_legal_rag/api.py",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [],
+      "jinja": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Run Agent",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_agent.py",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "--query",
+        "What constitutes indemnification in commercial contracts?",
+        "--index",
+        "./data/indices/faiss.index"
+      ],
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Document Ingestion",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/ingest.py",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "--docs",
+        "./data/legal_docs",
+        "--index",
+        "./data/indices/faiss.index",
+        "--semantic"
+      ],
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Streamlit App",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/streamlit_app.py",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [],
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Pytest Current File",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "${file}",
+        "-v",
+        "-s"
+      ],
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Pytest All Tests",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "tests/",
+        "-v",
+        "--tb=short"
+      ],
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Debug Tests with Coverage",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "tests/",
+        "--cov=lexgraph_legal_rag",
+        "--cov-report=html",
+        "--cov-report=term-missing",
+        "-v"
+      ],
+      "justMyCode": false
+    }
+  ]
+}

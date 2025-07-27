@@ -1,0 +1,99 @@
+{
+  "name": "LexGraph Legal RAG Development",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.linting.ruffEnabled": true,
+        "python.formatting.provider": "black",
+        "python.formatting.blackArgs": ["--line-length", "88"],
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestArgs": ["tests"],
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": true,
+          "source.fixAll": true
+        },
+        "files.exclude": {
+          "**/__pycache__": true,
+          "**/*.pyc": true,
+          ".pytest_cache": true,
+          ".coverage": true,
+          "htmlcov": true,
+          ".ruff_cache": true
+        }
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "charliermarsh.ruff",
+        "ms-python.pytest",
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "ms-vscode.vscode-docker",
+        "github.copilot",
+        "github.copilot-chat",
+        "ms-vsliveshare.vsliveshare",
+        "eamodio.gitlens",
+        "davidanson.vscode-markdownlint"
+      ]
+    }
+  },
+  "containerEnv": {
+    "PYTHONPATH": "/workspaces/lexgraph-legal-rag/src",
+    "ENVIRONMENT": "development"
+  },
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/workspaces/lexgraph-legal-rag/.local/bin"
+  },
+  "mounts": [
+    "source=lexgraph-venv,target=/workspaces/lexgraph-legal-rag/.venv,type=volume"
+  ],
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "git config --global --add safe.directory /workspaces/lexgraph-legal-rag",
+  "forwardPorts": [
+    8000,
+    8001,
+    8002,
+    3000,
+    9090,
+    3001
+  ],
+  "portsAttributes": {
+    "8000": {
+      "label": "FastAPI Main",
+      "onAutoForward": "notify"
+    },
+    "8001": {
+      "label": "Metrics Server",
+      "onAutoForward": "ignore"
+    },
+    "8002": {
+      "label": "Agent Metrics",
+      "onAutoForward": "ignore"
+    },
+    "3000": {
+      "label": "Streamlit UI",
+      "onAutoForward": "notify"
+    },
+    "9090": {
+      "label": "Prometheus",
+      "onAutoForward": "ignore"
+    },
+    "3001": {
+      "label": "Grafana",
+      "onAutoForward": "ignore"
+    }
+  },
+  "remoteUser": "vscode"
+}
