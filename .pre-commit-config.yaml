@@ -1,3 +1,5 @@
+# Pre-commit hooks for code quality and security
+# See https://pre-commit.com for more information
 repos:
   - repo: https://github.com/psf/black
     rev: 24.4.2
@@ -12,3 +14,10 @@ repos:
     rev: v1.4.0
     hooks:
       - id: detect-secrets
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
