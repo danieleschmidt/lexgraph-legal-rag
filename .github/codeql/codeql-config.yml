@@ -1,0 +1,46 @@
+name: "CodeQL Configuration for LexGraph Legal RAG"
+
+# Paths to exclude from analysis
+paths-ignore:
+  - "tests/**"
+  - "docs/**"
+  - "**/*.md"
+  - "**/*.json"
+  - "**/*.yaml"
+  - "**/*.yml"
+  - ".github/**"
+  - "monitoring/**"
+  - "k8s/**"
+
+# Paths to include (override exclude patterns if needed)
+paths:
+  - "src/**"
+
+# Query filters to use
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+
+# Configure specific query suites
+query-filters:
+  - exclude:
+      id: py/unused-import
+  - exclude:
+      id: py/similar-function
+  - include:
+      severity: error
+  - include:
+      severity: warning
+      security-severity: high
+
+# Disable default queries that may be noisy
+disable-default-queries: false
+
+# Configure external library support
+external-repository-token: ${{ secrets.GITHUB_TOKEN }}
+
+# Analysis configuration
+packs:
+  python:
+    - codeql/python-queries
+    - codeql/python-security-queries
