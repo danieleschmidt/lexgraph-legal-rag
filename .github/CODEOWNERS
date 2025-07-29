@@ -1,0 +1,40 @@
+# Global ownership
+* @terragon-labs/maintainers
+
+# Core source code
+/src/ @terragon-labs/core-developers
+/src/lexgraph_legal_rag/api.py @terragon-labs/backend-team
+/src/lexgraph_legal_rag/auth.py @terragon-labs/security-team
+/src/lexgraph_legal_rag/security/ @terragon-labs/security-team
+
+# Documentation
+/docs/ @terragon-labs/technical-writers @terragon-labs/maintainers
+/README.md @terragon-labs/technical-writers
+/*.md @terragon-labs/technical-writers
+
+# Configuration files
+/pyproject.toml @terragon-labs/maintainers
+/requirements.txt @terragon-labs/maintainers
+/package.json @terragon-labs/maintainers
+/Dockerfile @terragon-labs/devops-team
+/docker-compose.yml @terragon-labs/devops-team
+
+# Infrastructure and deployment
+/k8s/ @terragon-labs/devops-team @terragon-labs/platform-team
+/monitoring/ @terragon-labs/devops-team @terragon-labs/sre-team
+/.github/workflows/ @terragon-labs/devops-team @terragon-labs/maintainers
+
+# Security configurations
+/.github/workflows/security.yml @terragon-labs/security-team
+/SECURITY.md @terragon-labs/security-team
+/security_scan.py @terragon-labs/security-team
+
+# Testing
+/tests/ @terragon-labs/qa-team @terragon-labs/core-developers
+/tests/performance/ @terragon-labs/performance-team
+/conftest.py @terragon-labs/qa-team
+
+# Legal and compliance
+/LICENSE @terragon-labs/legal-team
+/CODE_OF_CONDUCT.md @terragon-labs/legal-team @terragon-labs/community-team
+/CONTRIBUTING.md @terragon-labs/community-team
