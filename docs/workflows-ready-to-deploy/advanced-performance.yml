@@ -1,0 +1,267 @@
+# Advanced Performance Testing and Optimization
+# Optimized for advanced repositories with comprehensive benchmarking
+
+name: Advanced Performance Testing
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run performance benchmarks weekly
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+    inputs:
+      benchmark_type:
+        description: 'Type of benchmark to run'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - quick
+          - memory
+          - cpu
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+env:
+  PYTHON_VERSION: '3.11'
+  PERFORMANCE_THRESHOLD: '5'  # 5% performance regression threshold
+
+jobs:
+  performance-benchmarks:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        benchmark-suite:
+          - api-endpoints
+          - search-performance
+          - indexing-speed
+          - memory-usage
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for performance comparison
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-benchmark memory-profiler py-spy
+      
+      - name: Set up performance test environment
+        run: |
+          # Create performance test data
+          mkdir -p benchmark_data
+          echo \"Setting up benchmark data for ${{ matrix.benchmark-suite }}\"
+      
+      - name: Run API Performance Benchmarks
+        if: matrix.benchmark-suite == 'api-endpoints'
+        run: |
+          python -m pytest tests/performance/test_api_benchmarks.py \
+            --benchmark-json=benchmark_results_api.json \
+            --benchmark-min-rounds=10 \
+            --benchmark-max-time=300
+      
+      - name: Run Search Performance Benchmarks  
+        if: matrix.benchmark-suite == 'search-performance'
+        run: |
+          python -m pytest tests/performance/test_search_benchmarks.py \
+            --benchmark-json=benchmark_results_search.json \
+            --benchmark-min-rounds=5 \
+            --benchmark-max-time=600
+      
+      - name: Run Indexing Speed Benchmarks
+        if: matrix.benchmark-suite == 'indexing-speed'
+        run: |
+          python -m pytest tests/performance/test_indexing_benchmarks.py \
+            --benchmark-json=benchmark_results_indexing.json \
+            --benchmark-min-rounds=3 \
+            --benchmark-max-time=900
+      
+      - name: Run Memory Usage Analysis
+        if: matrix.benchmark-suite == 'memory-usage'
+        run: |
+          python -m memory_profiler tests/performance/profile_memory_usage.py
+          py-spy record -o profile.svg -d 30 -- python tests/performance/run_memory_test.py
+      
+      - name: Store benchmark results
+        uses: benchmark-action/github-action-benchmark@v1
+        if: github.event_name != 'pull_request'
+        with:
+          tool: 'pytest'
+          output-file-path: benchmark_results_${{ matrix.benchmark-suite }}.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          comment-on-alert: true
+          alert-threshold: '${{ env.PERFORMANCE_THRESHOLD }}%'
+      
+      - name: Upload performance artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results-${{ matrix.benchmark-suite }}
+          path: |
+            benchmark_results_*.json
+            profile.svg
+            *.prof
+          retention-days: 30
+
+  load-testing:
+    name: Load Testing with k6
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'performance')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python application
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install and start application
+        run: |
+          pip install -r requirements.txt
+          python -m uvicorn lexgraph_legal_rag.api:create_api --host 0.0.0.0 --port 8000 &
+          sleep 10  # Wait for app to start
+      
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo \"deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main\" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      
+      - name: Run load tests
+        run: |
+          k6 run --out json=load_test_results.json tests/performance/load-test.js
+      
+      - name: Run stress tests
+        run: |
+          k6 run --out json=stress_test_results.json tests/performance/stress-test.js
+      
+      - name: Analyze results
+        run: |
+          echo \"Load Test Results:\"
+          jq '.metrics.http_req_duration.values' load_test_results.json
+          echo \"Stress Test Results:\"
+          jq '.metrics.http_req_duration.values' stress_test_results.json
+      
+      - name: Upload load test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: |
+            *_test_results.json
+          retention-days: 30
+
+  memory-profiling:
+    name: Advanced Memory Profiling
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.benchmark_type == 'memory'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install profiling tools
+        run: |
+          pip install -r requirements.txt
+          pip install memory-profiler py-spy pympler tracemalloc
+      
+      - name: Run memory profiling
+        run: |
+          python -m memory_profiler tests/performance/profile_memory_detailed.py
+          py-spy record -o memory_profile.svg -d 60 -- python tests/performance/run_full_pipeline.py
+      
+      - name: Generate memory report
+        run: |
+          python tests/performance/generate_memory_report.py > memory_analysis.md
+      
+      - name: Upload profiling results
+        uses: actions/upload-artifact@v4
+        with:
+          name: memory-profiling-results
+          path: |
+            memory_profile.svg
+            memory_analysis.md
+            *.prof
+          retention-days: 30
+
+  performance-regression-check:
+    name: Performance Regression Detection
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+      
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-branch
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest-benchmark
+      
+      - name: Run baseline benchmarks (main)
+        run: |
+          cd main-branch
+          python -m pytest tests/performance/test_regression_benchmarks.py \
+            --benchmark-json=../baseline_results.json \
+            --benchmark-min-rounds=5
+      
+      - name: Run current benchmarks (PR)
+        run: |
+          python -m pytest tests/performance/test_regression_benchmarks.py \
+            --benchmark-json=current_results.json \
+            --benchmark-min-rounds=5
+      
+      - name: Compare performance
+        run: |
+          python tests/performance/compare_benchmarks.py \
+            baseline_results.json current_results.json > performance_comparison.md
+      
+      - name: Comment PR with results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const comparison = fs.readFileSync('performance_comparison.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Performance Comparison Results\\n\\n${comparison}`
+            });
