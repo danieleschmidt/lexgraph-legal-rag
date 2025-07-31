@@ -20,7 +20,7 @@ prometheus-client>=0.20.0,<0.21.0
 psutil>=5.9.0
 
 # Web Interface
-streamlit>=1.33.0,<1.34.0
+streamlit>=1.33.0,<1.48.0
 
 # Development and Testing (only in dev environment)
 # pytest>=8.2
