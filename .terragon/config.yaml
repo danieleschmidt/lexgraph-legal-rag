@@ -1,0 +1,53 @@
+scoring:
+  weights:
+    advanced:
+      wsjf: 0.5          # Weighted Shortest Job First priority
+      ice: 0.1           # Impact, Confidence, Ease scoring
+      technicalDebt: 0.3 # Technical debt impact weighting
+      security: 0.1      # Security vulnerability boost
+  
+  thresholds:
+    minScore: 15         # Minimum score to consider execution
+    maxRisk: 0.7         # Maximum risk tolerance (0-1)
+    securityBoost: 2.5   # Security vulnerability score multiplier
+    complianceBoost: 2.0 # Compliance-related task boost
+
+discovery:
+  sources:
+    - gitHistory         # Parse commit messages and code comments
+    - staticAnalysis     # Code quality and complexity analysis
+    - securityScans      # Vulnerability and dependency checks
+    - performanceMetrics # Runtime and build performance data
+    - issueTrackers      # GitHub issues and project boards
+    - dependencyUpdates  # Package and library update needs
+  
+  scanIntervals:
+    security: 3600       # Security scans every hour (seconds)
+    dependencies: 86400  # Dependency checks daily
+    codeQuality: 43200   # Code analysis twice daily
+    performance: 604800  # Performance deep-dive weekly
+
+execution:
+  maxConcurrentTasks: 1
+  testRequirements:
+    minCoverage: 80      # Minimum test coverage percentage
+    performanceRegression: 5  # Max acceptable performance regression %
+    securityViolation: false  # Block on any security violations
+  
+  rollbackTriggers:
+    - testFailure
+    - buildFailure
+    - securityViolation
+    - coverageReduction
+
+automation:
+  enableContinuousDiscovery: true
+  enableAutonomousExecution: true
+  enableValueTracking: true
+  enableLearningLoop: true
+
+metrics:
+  trackingEnabled: true
+  dashboardPort: 8090
+  exportMetrics: true
+  retentionDays: 90
