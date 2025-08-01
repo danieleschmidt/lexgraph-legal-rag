@@ -1,0 +1,16 @@
+{
+  "lastRun": "2025-08-01T12:04:03.493873",
+  "itemsDiscovered": 8,
+  "breakdown": {
+    "technical-debt": {
+      "count": 7,
+      "avgScore": 72.9
+    },
+    "documentation": {
+      "count": 1,
+      "avgScore": 17.5
+    }
+  },
+  "topScore": 90.0,
+  "averageScore": 65.9375
+}

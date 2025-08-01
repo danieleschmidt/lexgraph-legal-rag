@@ -1,0 +1,60 @@
+{
+  "scoring": {
+    "weights": {
+      "advanced": {
+        "wsjf": 0.5,
+        "ice": 0.1,
+        "technicalDebt": 0.3,
+        "security": 0.1
+      }
+    },
+    "thresholds": {
+      "minScore": 15,
+      "maxRisk": 0.7,
+      "securityBoost": 2.5,
+      "complianceBoost": 2.0
+    }
+  },
+  "discovery": {
+    "sources": [
+      "gitHistory",
+      "staticAnalysis",
+      "securityScans",
+      "performanceMetrics",
+      "issueTrackers",
+      "dependencyUpdates"
+    ],
+    "scanIntervals": {
+      "security": 3600,
+      "dependencies": 86400,
+      "codeQuality": 43200,
+      "performance": 604800
+    }
+  },
+  "execution": {
+    "maxConcurrentTasks": 1,
+    "testRequirements": {
+      "minCoverage": 80,
+      "performanceRegression": 5,
+      "securityViolation": false
+    },
+    "rollbackTriggers": [
+      "testFailure",
+      "buildFailure",
+      "securityViolation",
+      "coverageReduction"
+    ]
+  },
+  "automation": {
+    "enableContinuousDiscovery": true,
+    "enableAutonomousExecution": true,
+    "enableValueTracking": true,
+    "enableLearningLoop": true
+  },
+  "metrics": {
+    "trackingEnabled": true,
+    "dashboardPort": 8090,
+    "exportMetrics": true,
+    "retentionDays": 90
+  }
+}
