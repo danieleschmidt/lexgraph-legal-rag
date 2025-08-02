@@ -1,0 +1,60 @@
+# CODEOWNERS file for LexGraph Legal RAG
+# This file defines code ownership and automatic review assignments for different parts of the codebase.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global ownership - these users are automatically requested for review on all PRs
+* @danieleschmidt
+
+# Core application code
+/src/ @danieleschmidt
+/src/lexgraph_legal_rag/api.py @danieleschmidt
+/src/lexgraph_legal_rag/multi_agent.py @danieleschmidt
+/src/lexgraph_legal_rag/semantic_search.py @danieleschmidt
+
+# Infrastructure and deployment
+/k8s/ @danieleschmidt
+/monitoring/ @danieleschmidt
+/docker-compose.yml @danieleschmidt
+/Dockerfile @danieleschmidt
+
+# CI/CD and automation
+/.github/ @danieleschmidt
+/docs/workflows/ @danieleschmidt
+/scripts/ @danieleschmidt
+
+# Security-related files
+/SECURITY.md @danieleschmidt
+/.pre-commit-config.yaml @danieleschmidt
+/bandit-report.json @danieleschmidt
+/security-report.json @danieleschmidt
+
+# Documentation
+/docs/ @danieleschmidt
+/README.md @danieleschmidt
+/CONTRIBUTING.md @danieleschmidt
+/ARCHITECTURE.md @danieleschmidt
+
+# Configuration files
+/pyproject.toml @danieleschmidt
+/requirements*.txt @danieleschmidt
+/requirements*.in @danieleschmidt
+/.env.example @danieleschmidt
+
+# Testing
+/tests/ @danieleschmidt
+/pytest.ini @danieleschmidt
+/pytest-mutation.ini @danieleschmidt
+/conftest.py @danieleschmidt
+
+# Package management and dependencies
+/package.json @danieleschmidt
+/Makefile @danieleschmidt
+
+# Legal and compliance
+/LICENSE @danieleschmidt
+/CODE_OF_CONDUCT.md @danieleschmidt
+
+# Project management
+/BACKLOG.md @danieleschmidt
+/CHANGELOG.md @danieleschmidt
+/PROJECT_CHARTER.md @danieleschmidt
