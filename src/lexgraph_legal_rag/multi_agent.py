@@ -6,6 +6,17 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, AsyncIterator, Iterable, Iterator, Protocol, Any
 
 import logging
+import asyncio
+
+from .resilience import (
+    resilient, 
+    ResilientOperation, 
+    CircuitBreakerConfig, 
+    RetryConfig, 
+    get_circuit_breaker,
+    CircuitBreakerOpenError,
+    TimeoutError
+)
 
 if TYPE_CHECKING:  # pragma: no cover - used for type checking only
     from .document_pipeline import LegalDocumentPipeline
@@ -30,36 +41,77 @@ class RetrieverAgent:
     top_k: int = 3
     
     async def run(self, query: str) -> str:
-        """Retrieve relevant text for a query."""
+        """Retrieve relevant text for a query with resilient error handling."""
         logger.debug("RetrieverAgent running with query: %s", query)
+        
+        # Input validation
+        if not isinstance(query, str) or not query.strip():
+            raise ValueError("Query must be a non-empty string")
         
         if self.pipeline is None:
             logger.warning("No pipeline configured for RetrieverAgent, returning stub response")
             return f"retrieved: {query}"
         
-        # Search for relevant documents
-        results = self.pipeline.search(query, top_k=self.top_k)
-        
-        # Filter out results with very low relevance scores
-        relevant_results = [(doc, score) for doc, score in results if score > 0.01]
-        
-        if not relevant_results:
-            logger.info("No relevant documents found for query: %s", query)
-            return f"No relevant documents found for: {query}"
-        
-        results = relevant_results
-        
-        # Combine retrieved documents into a single text
-        retrieved_texts = []
-        for doc, score in results:
-            # Include document metadata for context
-            source = doc.metadata.get("path", doc.id)
-            retrieved_texts.append(f"[Source: {source}, Relevance: {score:.3f}]\n{doc.text[:500]}...")
-        
-        combined_text = "\n\n".join(retrieved_texts)
-        logger.debug("Retrieved %d documents with total length %d", len(results), len(combined_text))
-        
-        return combined_text
+        try:
+            # Use resilient operation for search
+            resilient_search = ResilientOperation(
+                circuit_breaker=get_circuit_breaker("document_search", CircuitBreakerConfig(
+                    failure_threshold=3,
+                    recovery_timeout=30.0,
+                    name="document_search"
+                )),
+                retry_config=RetryConfig(max_attempts=2, base_delay=0.5),
+                operation_timeout=10.0
+            )
+            
+            # Search for relevant documents with resilience
+            results = await resilient_search.execute(
+                lambda: self.pipeline.search(query, top_k=self.top_k)
+            )
+            
+            # Filter out results with very low relevance scores
+            relevant_results = [(doc, score) for doc, score in results if score > 0.01]
+            
+            if not relevant_results:
+                logger.info("No relevant documents found for query: %s", query)
+                return f"No relevant documents found for: {query}"
+            
+            results = relevant_results
+            
+            # Combine retrieved documents into a single text with error handling
+            retrieved_texts = []
+            for doc, score in results:
+                try:
+                    # Include document metadata for context
+                    source = doc.metadata.get("path", doc.id) if doc.metadata else doc.id
+                    # Safely truncate text content
+                    text_preview = doc.text[:500] if doc.text else "[No content]"
+                    if len(doc.text) > 500:
+                        text_preview += "..."
+                    
+                    retrieved_texts.append(f"[Source: {source}, Relevance: {score:.3f}]\n{text_preview}")
+                except Exception as e:
+                    logger.warning(f"Error processing document {doc.id}: {e}")
+                    continue
+            
+            if not retrieved_texts:
+                logger.warning("All documents failed processing for query: %s", query)
+                return f"Error processing documents for: {query}"
+            
+            combined_text = "\n\n".join(retrieved_texts)
+            logger.debug("Retrieved %d documents with total length %d", len(results), len(combined_text))
+            
+            return combined_text
+            
+        except CircuitBreakerOpenError:
+            logger.error("Document search circuit breaker is open")
+            return f"Search service temporarily unavailable for: {query}"
+        except TimeoutError:
+            logger.error("Document search timed out")
+            return f"Search timed out for: {query}"
+        except Exception as e:
+            logger.error(f"Error during document retrieval: {e}")
+            return f"Error retrieving documents for: {query}"
     
     async def batch_run(self, queries: list[str]) -> list[str]:
         """Retrieve relevant text for multiple queries using batch processing."""
@@ -109,12 +161,43 @@ class SummarizerAgent:
     max_length: int = 200
     
     async def run(self, text: str) -> str:
-        """Return a summary of the given text."""
+        """Return a summary of the given text with robust error handling."""
         logger.debug("SummarizerAgent summarizing text length: %d", len(text))
+        
+        # Input validation
+        if not isinstance(text, str):
+            raise ValueError("Input text must be a string")
         
         if not text or text.startswith("No relevant documents"):
             return text
         
+        try:
+            # Use resilient operation for text processing
+            resilient_summarize = ResilientOperation(
+                circuit_breaker=get_circuit_breaker("text_summarization", CircuitBreakerConfig(
+                    failure_threshold=5,
+                    recovery_timeout=20.0,
+                    name="text_summarization"
+                )),
+                retry_config=RetryConfig(max_attempts=2, base_delay=0.2),
+                operation_timeout=5.0
+            )
+            
+            return await resilient_summarize.execute(self._process_text, text)
+            
+        except CircuitBreakerOpenError:
+            logger.error("Text summarization circuit breaker is open")
+            return f"Summarization service temporarily unavailable. Original text length: {len(text)}"
+        except TimeoutError:
+            logger.error("Text summarization timed out")
+            return f"Summarization timed out. Text preview: {text[:100]}..."
+        except Exception as e:
+            logger.error(f"Error during text summarization: {e}")
+            # Fallback to simple truncation
+            return text[:self.max_length] + "..." if len(text) > self.max_length else text
+    
+    def _process_text(self, text: str) -> str:
+        """Internal method to process text for summarization."""
         # Extract key legal concepts and create a summary
         lines = text.split('\n')
         

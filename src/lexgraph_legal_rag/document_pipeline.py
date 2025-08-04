@@ -287,3 +287,139 @@ class LegalDocumentPipeline:
     @property
     def documents(self) -> List[LegalDocument]:
         return self.index.documents
+    
+    def ingest_directory(self, directory: Path, chunk_size: int = 512, enable_semantic: bool = False) -> int:
+        """Ingest documents from a directory with chunking support.
+        
+        Args:
+            directory: Path to directory containing documents
+            chunk_size: Size of text chunks for processing
+            enable_semantic: Whether to enable semantic indexing
+            
+        Returns:
+            Number of documents processed
+        """
+        docs = []
+        supported_extensions = {'.txt', '.md', '.pdf', '.docx', '.doc'}
+        
+        # Find all supported document files
+        document_files = []
+        for ext in supported_extensions:
+            document_files.extend(directory.glob(f'**/*{ext}'))
+        
+        if not document_files:
+            logger.warning(f"No supported documents found in {directory}")
+            return 0
+        
+        # Process each document
+        for doc_path in document_files:
+            try:
+                # Read document content based on file type
+                if doc_path.suffix.lower() == '.txt':
+                    content = doc_path.read_text(encoding='utf-8', errors='ignore')
+                elif doc_path.suffix.lower() == '.md':
+                    content = doc_path.read_text(encoding='utf-8', errors='ignore')
+                else:
+                    # For other formats, treat as text for now
+                    # In a full implementation, you'd use appropriate parsers
+                    try:
+                        content = doc_path.read_text(encoding='utf-8', errors='ignore')
+                    except UnicodeDecodeError:
+                        logger.warning(f"Skipping binary file: {doc_path}")
+                        continue
+                
+                # Split content into chunks if it's too large
+                if len(content) > chunk_size:
+                    chunks = self._chunk_text(content, chunk_size)
+                    for i, chunk in enumerate(chunks):
+                        doc_id = f"{doc_path.stem}_chunk_{i}"
+                        docs.append(LegalDocument(
+                            id=doc_id,
+                            text=chunk,
+                            metadata={
+                                "path": str(doc_path),
+                                "chunk_index": i,
+                                "total_chunks": len(chunks),
+                                "original_file": doc_path.name
+                            }
+                        ))
+                else:
+                    # Add as single document
+                    docs.append(LegalDocument(
+                        id=doc_path.stem,
+                        text=content,
+                        metadata={
+                            "path": str(doc_path),
+                            "original_file": doc_path.name
+                        }
+                    ))
+                    
+            except Exception as e:
+                logger.error(f"Failed to process document {doc_path}: {e}")
+                continue
+        
+        # Add documents to index
+        if docs:
+            self.index.add(docs)
+            if enable_semantic and self.semantic is not None:
+                self.semantic.ingest(docs)
+            elif enable_semantic and self.semantic is None:
+                logger.warning("Semantic search requested but not initialized")
+            
+            logger.info(f"Successfully ingested {len(docs)} document chunks from {len(document_files)} files")
+        
+        return len(document_files)
+    
+    def _chunk_text(self, text: str, chunk_size: int, overlap: int = 50) -> list[str]:
+        """Split text into overlapping chunks."""
+        if len(text) <= chunk_size:
+            return [text]
+        
+        chunks = []
+        start = 0
+        while start < len(text):
+            end = start + chunk_size
+            
+            # Try to break at sentence boundaries
+            if end < len(text):
+                # Look for sentence endings near the chunk boundary
+                for i in range(min(100, chunk_size // 4)):  # Look within last 25% of chunk
+                    if end - i > start and text[end - i - 1] in '.!?':
+                        end = end - i
+                        break
+                else:
+                    # Fall back to word boundaries
+                    while end > start and end < len(text) and text[end] != ' ':
+                        end -= 1
+            
+            chunk = text[start:end].strip()
+            if chunk:
+                chunks.append(chunk)
+            
+            # Move start position with overlap
+            start = max(start + 1, end - overlap)
+            if start >= len(text):
+                break
+        
+        return chunks
+    
+    def get_index_stats(self) -> dict[str, Any]:
+        """Get statistics about the current index."""
+        stats = {
+            "document_count": len(self.documents),
+            "chunk_count": len(self.documents),
+            "vector_dim": 0,
+            "index_size_mb": 0.0,
+            "semantic_enabled": self.semantic is not None
+        }
+        
+        # Calculate approximate index size
+        if self.index._matrix is not None:
+            import sys
+            stats["vector_dim"] = self.index._matrix.shape[1]
+            # Rough estimate of memory usage
+            matrix_size = self.index._matrix.data.nbytes if hasattr(self.index._matrix, 'data') else 0
+            text_size = sum(sys.getsizeof(doc.text) for doc in self.documents)
+            stats["index_size_mb"] = (matrix_size + text_size) / (1024 * 1024)
+        
+        return stats
