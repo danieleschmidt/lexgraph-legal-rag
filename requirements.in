@@ -3,7 +3,7 @@
 # Run `pip-compile requirements.in` to generate requirements.txt
 
 # Web Framework
-fastapi>=0.115.0,<0.116.0
+fastapi>=0.115.0,<0.117.0
 
 # HTTP Client
 httpx>=0.28.0,<0.29.0
