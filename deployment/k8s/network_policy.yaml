@@ -1,0 +1,63 @@
+{
+  "apiVersion": "networking.k8s.io/v1",
+  "kind": "NetworkPolicy",
+  "metadata": {
+    "name": "lexgraph-network-policy"
+  },
+  "spec": {
+    "podSelector": {
+      "matchLabels": {
+        "app": "lexgraph-legal-rag"
+      }
+    },
+    "policyTypes": [
+      "Ingress",
+      "Egress"
+    ],
+    "ingress": [
+      {
+        "from": [
+          {
+            "namespaceSelector": {
+              "matchLabels": {
+                "name": "ingress-nginx"
+              }
+            }
+          }
+        ],
+        "ports": [
+          {
+            "protocol": "TCP",
+            "port": 8000
+          }
+        ]
+      }
+    ],
+    "egress": [
+      {
+        "to": [
+          {
+            "namespaceSelector": {
+              "matchLabels": {
+                "name": "kube-system"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "to": [],
+        "ports": [
+          {
+            "protocol": "TCP",
+            "port": 443
+          },
+          {
+            "protocol": "TCP",
+            "port": 80
+          }
+        ]
+      }
+    ]
+  }
+}

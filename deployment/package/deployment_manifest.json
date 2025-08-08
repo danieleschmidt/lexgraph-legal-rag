@@ -1,0 +1,27 @@
+{
+  "version": "0e9cdc6",
+  "created_at": "2025-08-08T01:44:51.385529",
+  "artifacts": {
+    "docker_image": "lexgraph-legal-rag:v0e9cdc6",
+    "kubernetes_manifests": 8,
+    "configuration_files": 2,
+    "database_migrations": 2,
+    "monitoring_dashboards": 2
+  },
+  "deployment_checklist": [
+    "Build and push Docker image",
+    "Run database migrations",
+    "Deploy Kubernetes manifests",
+    "Verify health checks",
+    "Update monitoring dashboards",
+    "Run smoke tests",
+    "Monitor deployment"
+  ],
+  "rollback_plan": [
+    "Scale down new deployment",
+    "Scale up previous deployment",
+    "Update ingress routing",
+    "Rollback database migrations if needed",
+    "Verify rollback health"
+  ]
+}

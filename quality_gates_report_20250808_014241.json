@@ -1,0 +1,287 @@
+{
+  "overall_status": "FAILED",
+  "execution_time": 0.18403172492980957,
+  "timestamp": "2025-08-08T01:42:41.246359",
+  "scores": {
+    "security": 71.2,
+    "performance": 51.746905693523914,
+    "testing": 78.01470588235294,
+    "overall": 66.98720385862562
+  },
+  "thresholds": {
+    "security_threshold": 80.0,
+    "performance_threshold": 75.0,
+    "testing_threshold": 70.0,
+    "overall_threshold": 75.0
+  },
+  "category_status": {
+    "security": "FAILED",
+    "performance": "FAILED",
+    "testing": "PASSED"
+  },
+  "individual_results": [
+    {
+      "gate_name": "security_bandit",
+      "passed": true,
+      "score": 86,
+      "threshold": 80,
+      "details": {
+        "files_scanned": 36,
+        "issues_found": {
+          "high": 0,
+          "medium": 1,
+          "low": 2
+        },
+        "total_issues": 3,
+        "security_score": 86
+      },
+      "execution_time": 0.0007140636444091797,
+      "timestamp": "2025-08-08 01:42:41.063179",
+      "recommendations": [
+        "Address medium severity security issues",
+        "Review low severity findings for best practices"
+      ]
+    },
+    {
+      "gate_name": "security_safety",
+      "passed": true,
+      "score": 100,
+      "threshold": 100,
+      "details": {
+        "vulnerabilities_found": 0,
+        "requirements_file": "/root/repo/requirements.txt"
+      },
+      "execution_time": 4.673004150390625e-05,
+      "timestamp": "2025-08-08 01:42:41.063394",
+      "recommendations": []
+    },
+    {
+      "gate_name": "security_secrets",
+      "passed": false,
+      "score": 50,
+      "threshold": 100,
+      "details": {
+        "files_checked": 53,
+        "potential_secrets_found": 1
+      },
+      "execution_time": 0.022696733474731445,
+      "timestamp": "2025-08-08 01:42:41.086203",
+      "recommendations": [
+        "Review potential secret exposures",
+        "Use environment variables for sensitive data",
+        "Implement proper secret management"
+      ]
+    },
+    {
+      "gate_name": "security_permissions",
+      "passed": false,
+      "score": 20,
+      "threshold": 90,
+      "details": {
+        "files_checked": 308,
+        "suspicious_permissions": 8
+      },
+      "execution_time": 0.006310224533081055,
+      "timestamp": "2025-08-08 01:42:41.092743",
+      "recommendations": [
+        "Fix file permissions",
+        "Remove execute permissions from data files",
+        "Ensure proper file security"
+      ]
+    },
+    {
+      "gate_name": "security_dependencies",
+      "passed": true,
+      "score": 100.0,
+      "threshold": 60,
+      "details": {
+        "security_features": 5,
+        "total_features": 5,
+        "has_pyproject": true,
+        "has_requirements": true
+      },
+      "execution_time": 0.0002200603485107422,
+      "timestamp": "2025-08-08 01:42:41.093174",
+      "recommendations": []
+    },
+    {
+      "gate_name": "performance_code_complexity",
+      "passed": false,
+      "score": 99.27333705980995,
+      "threshold": 80,
+      "details": {
+        "files_analyzed": 123,
+        "total_functions": 1789,
+        "complex_functions": 13,
+        "max_complexity": 20,
+        "complexity_score": 99.27333705980995
+      },
+      "execution_time": 0.09536194801330566,
+      "timestamp": "2025-08-08 01:42:41.188709",
+      "recommendations": [
+        "Refactor complex functions",
+        "Break down large functions into smaller ones",
+        "Reduce cyclomatic complexity"
+      ]
+    },
+    {
+      "gate_name": "performance_import_performance",
+      "passed": false,
+      "score": 85.71428571428572,
+      "threshold": 90,
+      "details": {
+        "files_analyzed": 123,
+        "total_imports": 896,
+        "slow_imports": 128,
+        "import_score": 85.71428571428572
+      },
+      "execution_time": 0.02419304847717285,
+      "timestamp": "2025-08-08 01:42:41.213128",
+      "recommendations": [
+        "Avoid wildcard imports",
+        "Move imports to module level",
+        "Use specific imports instead of importing entire modules"
+      ]
+    },
+    {
+      "gate_name": "performance_memory_usage",
+      "passed": false,
+      "score": 0,
+      "threshold": 85,
+      "details": {
+        "files_analyzed": 123,
+        "memory_issues_found": 60,
+        "memory_score": 0
+      },
+      "execution_time": 0.011673212051391602,
+      "timestamp": "2025-08-08 01:42:41.225063",
+      "recommendations": [
+        "Review memory usage patterns",
+        "Avoid global variables where possible",
+        "Use generators for large datasets",
+        "Implement proper resource cleanup"
+      ]
+    },
+    {
+      "gate_name": "performance_algorithmic_efficiency",
+      "passed": false,
+      "score": 22,
+      "threshold": 80,
+      "details": {
+        "files_analyzed": 123,
+        "efficiency_issues": 26,
+        "efficiency_score": 22
+      },
+      "execution_time": 0.012692451477050781,
+      "timestamp": "2025-08-08 01:42:41.238008",
+      "recommendations": [
+        "Use enumerate() instead of range(len())",
+        "Avoid unnecessary list() conversions",
+        "Use dict.items() for key-value iteration",
+        "Review sorting usage for necessity"
+      ]
+    },
+    {
+      "gate_name": "testing_test_coverage",
+      "passed": true,
+      "score": 100,
+      "threshold": 70,
+      "details": {
+        "src_files": 36,
+        "test_files": 63,
+        "test_ratio": 1.75,
+        "has_test_config": true,
+        "estimated_coverage": 100
+      },
+      "execution_time": 0.0008544921875,
+      "timestamp": "2025-08-08 01:42:41.239141",
+      "recommendations": []
+    },
+    {
+      "gate_name": "testing_test_quality",
+      "passed": false,
+      "score": 40.0,
+      "threshold": 70,
+      "details": {
+        "test_files_analyzed": 63,
+        "properly_named_tests": 61,
+        "tests_with_assertions": 9,
+        "documented_tests": 7,
+        "tests_with_fixtures": 4,
+        "scenario_coverage": 8,
+        "quality_score": 40.0
+      },
+      "execution_time": 0.001888275146484375,
+      "timestamp": "2025-08-08 01:42:41.241213",
+      "recommendations": [
+        "Follow test naming conventions (test_*.py)",
+        "Include assertions in all tests",
+        "Add docstrings to test functions",
+        "Use fixtures for test setup",
+        "Cover success, error, and edge case scenarios"
+      ]
+    },
+    {
+      "gate_name": "testing_test_structure",
+      "passed": true,
+      "score": 75.0,
+      "threshold": 75,
+      "details": {
+        "has_tests_dir": true,
+        "has_init_file": false,
+        "has_test_config": true,
+        "test_subdirs": [
+          "performance"
+        ],
+        "structure_score": 75.0
+      },
+      "execution_time": 0.000209808349609375,
+      "timestamp": "2025-08-08 01:42:41.241571",
+      "recommendations": []
+    },
+    {
+      "gate_name": "testing_test_performance",
+      "passed": true,
+      "score": 97.05882352941177,
+      "threshold": 70,
+      "details": {
+        "test_files": 63,
+        "total_tests": 816,
+        "performance_issues": 48,
+        "performance_score": 97.05882352941177
+      },
+      "execution_time": 0.004526376724243164,
+      "timestamp": "2025-08-08 01:42:41.246209",
+      "recommendations": []
+    }
+  ],
+  "failed_gates": [
+    "security_secrets",
+    "security_permissions",
+    "performance_code_complexity",
+    "performance_import_performance",
+    "performance_memory_usage",
+    "performance_algorithmic_efficiency",
+    "testing_test_quality"
+  ],
+  "recommendations": [
+    "\ud83d\udd12 CRITICAL: Address security vulnerabilities and implement security best practices",
+    "\u26a1 Optimize code performance and reduce complexity",
+    "Review potential secret exposures",
+    "Use environment variables for sensitive data",
+    "Fix file permissions",
+    "Remove execute permissions from data files",
+    "Refactor complex functions",
+    "Break down large functions into smaller ones",
+    "Avoid wildcard imports",
+    "Move imports to module level",
+    "Review memory usage patterns",
+    "Avoid global variables where possible",
+    "Consider implementing automated quality gates in CI/CD pipeline"
+  ],
+  "summary": {
+    "total_gates": 13,
+    "passed_gates": 6,
+    "failed_gates": 7
+  }
+}
