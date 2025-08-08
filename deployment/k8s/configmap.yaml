@@ -1,0 +1,11 @@
+{
+  "apiVersion": "v1",
+  "kind": "ConfigMap",
+  "metadata": {
+    "name": "lexgraph-config"
+  },
+  "data": {
+    "app_config.json": "{\"log_level\": \"INFO\", \"max_query_length\": 1000, \"cache_ttl\": 3600, \"rate_limit\": 100}",
+    "prometheus.yml": "global:\n  scrape_interval: 15s\nscrape_configs:\n- job_name: \"lexgraph\"\n  static_configs:\n  - targets: [\"localhost:8000\"]"
+  }
+}

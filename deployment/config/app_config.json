@@ -1,0 +1,22 @@
+{
+  "environment": "production",
+  "debug": false,
+  "log_level": "INFO",
+  "cors_allowed_origins": [
+    "https://app.lexgraph.com"
+  ],
+  "api_rate_limit": 1000,
+  "cache_ttl": 3600,
+  "max_request_size": 10485760,
+  "security": {
+    "enable_rate_limiting": true,
+    "enable_cors": true,
+    "enable_security_headers": true,
+    "session_timeout": 1800
+  },
+  "monitoring": {
+    "enable_metrics": true,
+    "enable_tracing": true,
+    "prometheus_port": 9090
+  }
+}
