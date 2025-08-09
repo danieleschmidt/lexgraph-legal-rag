@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  lexgraph-legal-rag:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: lexgraph-legal-rag-app
+    environment:
+      - API_KEY=${API_KEY:-production-legal-rag-key}
+      - DOCS_PATHS=/app/documents
+      - HOST=0.0.0.0
+      - PORT=8000
+      - WORKERS=2
+      - MAX_PIPELINE_WORKERS=4
+      - METRICS_PORT=9090
+      - PYTHONPATH=/app
+    ports:
+      - "8000:8000"  # API server
+      - "9090:9090"  # Metrics server
+    volumes:
+      - ./demo_documents:/app/documents:ro
+      - ./logs:/app/logs
+      - pipeline_cache:/app/cache
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+    networks:
+      - lexgraph-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: lexgraph-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - lexgraph-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: lexgraph-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    restart: unless-stopped
+    networks:
+      - lexgraph-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: lexgraph-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - lexgraph-legal-rag
+    restart: unless-stopped
+    networks:
+      - lexgraph-network
+
+volumes:
+  pipeline_cache:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  lexgraph-network:
+    driver: bridge

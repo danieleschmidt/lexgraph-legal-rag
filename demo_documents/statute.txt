@@ -1,0 +1,12 @@
+CALIFORNIA BUSINESS CODE SECTION 1542
+
+Civil Code Section 1542 provides: "A general release does not extend to claims that the creditor or releasing party does not know or suspect to exist in his or her favor at the time of executing the release and that, if known by him or her, would have materially affected his or her settlement with the debtor or released party."
+
+APPLICATION
+This statute prevents parties from releasing unknown claims in general settlement agreements. Courts have consistently held that Section 1542 protections can only be waived through express, specific language that clearly identifies the waiver.
+
+PRACTICAL EFFECT
+To effectively waive Civil Code Section 1542 protections, settlement agreements must include explicit language stating that the releasing party acknowledges familiarity with Section 1542 and voluntarily waives its protection regarding unknown claims.
+
+COMPLIANCE REQUIREMENTS
+Legal practitioners must ensure that any general release contains adequate Section 1542 waiver language to be enforceable. Failure to properly address this statute can result in continued exposure to unknown claims despite executing a release agreement.

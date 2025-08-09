@@ -1,0 +1,18 @@
+SOFTWARE LICENSE AGREEMENT
+
+This Software License Agreement governs the use of proprietary software provided by TechCorp to Customer.
+
+LICENSE GRANT
+TechCorp grants Customer a non-exclusive, non-transferable license to use the software in accordance with the terms herein.
+
+WARRANTY DISCLAIMER
+SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTIES. TECHCORP DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+LIMITATION OF LIABILITY  
+IN NO EVENT SHALL TECHCORP BE LIABLE FOR ANY DAMAGES ARISING OUT OF THE USE OF THE SOFTWARE, INCLUDING DIRECT, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES.
+
+TERMINATION CLAUSE
+This license terminates automatically if Customer breaches any provision. Upon termination, Customer must cease all use and destroy all copies of the software.
+
+INTELLECTUAL PROPERTY
+All intellectual property rights in the software remain with TechCorp. Customer acquires no ownership rights.

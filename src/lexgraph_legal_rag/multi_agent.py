@@ -53,21 +53,8 @@ class RetrieverAgent:
             return f"retrieved: {query}"
         
         try:
-            # Use resilient operation for search
-            resilient_search = ResilientOperation(
-                circuit_breaker=get_circuit_breaker("document_search", CircuitBreakerConfig(
-                    failure_threshold=3,
-                    recovery_timeout=30.0,
-                    name="document_search"
-                )),
-                retry_config=RetryConfig(max_attempts=2, base_delay=0.5),
-                operation_timeout=10.0
-            )
-            
-            # Search for relevant documents with resilience
-            results = await resilient_search.execute(
-                lambda: self.pipeline.search(query, top_k=self.top_k)
-            )
+            # Direct search without circuit breaker for now (simpler implementation)
+            results = self.pipeline.search(query, top_k=self.top_k)
             
             # Filter out results with very low relevance scores
             relevant_results = [(doc, score) for doc, score in results if score > 0.01]
@@ -103,12 +90,6 @@ class RetrieverAgent:
             
             return combined_text
             
-        except CircuitBreakerOpenError:
-            logger.error("Document search circuit breaker is open")
-            return f"Search service temporarily unavailable for: {query}"
-        except TimeoutError:
-            logger.error("Document search timed out")
-            return f"Search timed out for: {query}"
         except Exception as e:
             logger.error(f"Error during document retrieval: {e}")
             return f"Error retrieving documents for: {query}"
@@ -172,25 +153,8 @@ class SummarizerAgent:
             return text
         
         try:
-            # Use resilient operation for text processing
-            resilient_summarize = ResilientOperation(
-                circuit_breaker=get_circuit_breaker("text_summarization", CircuitBreakerConfig(
-                    failure_threshold=5,
-                    recovery_timeout=20.0,
-                    name="text_summarization"
-                )),
-                retry_config=RetryConfig(max_attempts=2, base_delay=0.2),
-                operation_timeout=5.0
-            )
-            
-            return await resilient_summarize.execute(self._process_text, text)
-            
-        except CircuitBreakerOpenError:
-            logger.error("Text summarization circuit breaker is open")
-            return f"Summarization service temporarily unavailable. Original text length: {len(text)}"
-        except TimeoutError:
-            logger.error("Text summarization timed out")
-            return f"Summarization timed out. Text preview: {text[:100]}..."
+            # Direct text processing without circuit breaker for now
+            return self._process_text(text)
         except Exception as e:
             logger.error(f"Error during text summarization: {e}")
             # Fallback to simple truncation
