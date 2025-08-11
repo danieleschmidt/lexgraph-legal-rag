@@ -42,7 +42,7 @@ dependencies = [
     "faiss-cpu==1.11.0.post1",
     "structlog==25.4.0",
     "prometheus-client==0.20.0",
-    "streamlit==1.47.1",
+    "streamlit==1.48.0",
     "psutil>=5.9.0",
 ]
 
