@@ -1,0 +1,241 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bioneuro-system
+  labels:
+    app: bioneuro-olfactory-fusion
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bioneuro-api
+  namespace: bioneuro-system
+  labels:
+    app: bioneuro-api
+    version: v1.0.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: bioneuro-api
+  template:
+    metadata:
+      labels:
+        app: bioneuro-api
+        version: v1.0.0
+    spec:
+      containers:
+      - name: bioneuro-api
+        image: bioneuro-olfactory-fusion:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: PYTHONPATH
+          value: "/app/src"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: WORKERS
+          value: "4"
+        - name: MAX_CACHE_SIZE
+          value: "10000"
+        - name: MEMORY_LIMIT_MB
+          value: "2048"
+        - name: ENABLE_MONITORING
+          value: "true"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+        livenessProbe:
+          exec:
+            command:
+            - python3
+            - -c
+            - "import sys; sys.path.insert(0, '/app/src'); from lexgraph_legal_rag.bioneuro_olfactory_fusion import get_fusion_engine; print('OK')"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - python3
+            - -c
+            - "import sys; sys.path.insert(0, '/app/src'); from lexgraph_legal_rag.bioneuro_olfactory_fusion import get_fusion_engine; print('OK')"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+        - name: logs-volume
+          mountPath: /app/logs
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: bioneuro-data-pvc
+      - name: logs-volume
+        persistentVolumeClaim:
+          claimName: bioneuro-logs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bioneuro-api-service
+  namespace: bioneuro-system
+  labels:
+    app: bioneuro-api
+spec:
+  selector:
+    app: bioneuro-api
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bioneuro-api-ingress
+  namespace: bioneuro-system
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - bioneuro-api.yourdomain.com
+    secretName: bioneuro-tls
+  rules:
+  - host: bioneuro-api.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: bioneuro-api-service
+            port:
+              number: 8000
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bioneuro-data-pvc
+  namespace: bioneuro-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: fast-ssd
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bioneuro-logs-pvc
+  namespace: bioneuro-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bioneuro-api-hpa
+  namespace: bioneuro-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bioneuro-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bioneuro-config
+  namespace: bioneuro-system
+data:
+  config.json: |
+    {
+      "optimization": {
+        "max_cache_size": 10000,
+        "cache_strategy": "adaptive",
+        "processing_mode": "adaptive",
+        "max_workers": 4,
+        "batch_size": 32,
+        "memory_limit_mb": 2048,
+        "enable_profiling": true,
+        "auto_scaling": true
+      },
+      "monitoring": {
+        "enable_prometheus": true,
+        "metrics_port": 9090,
+        "health_check_interval": 30,
+        "alert_thresholds": {
+          "memory_usage_mb": 1800,
+          "cpu_usage_percent": 80,
+          "error_rate": 0.05,
+          "response_time_p95": 5.0
+        }
+      },
+      "security": {
+        "enable_cors": true,
+        "allowed_origins": ["https://yourdomain.com"],
+        "api_key_rotation_days": 30,
+        "rate_limit_per_minute": 1000
+      }
+    }
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bioneuro-secrets
+  namespace: bioneuro-system
+type: Opaque
+data:
+  api-key: YmlvbmV1cm8tc2VjcmV0LWFwaS1rZXktMTIzNDU2Nzg5MA==  # bioneuro-secret-api-key-1234567890
+  monitoring-token: bW9uaXRvcmluZy10b2tlbi1hYmNkZWZnaGlqa2xtbm8=  # monitoring-token-abcdefghijklmno

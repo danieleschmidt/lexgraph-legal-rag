@@ -1,0 +1,82 @@
+groups:
+  - name: bioneuro-alerts
+    rules:
+      # High error rate alert
+      - alert: BioneurOHighErrorRate
+        expr: rate(bioneuro_errors_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected in Bioneural system"
+          description: "Error rate is {{ $value }} per second for the last 5 minutes"
+          
+      # High memory usage alert
+      - alert: BioneuroHighMemoryUsage
+        expr: bioneuro_memory_usage_bytes / 1024 / 1024 > 1800
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage in Bioneural system"
+          description: "Memory usage is {{ $value }}MB, above 1800MB threshold"
+          
+      # High response time alert
+      - alert: BioneuroHighResponseTime
+        expr: histogram_quantile(0.95, rate(bioneuro_document_processing_seconds_bucket[5m])) > 5.0
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time in Bioneural document processing"
+          description: "95th percentile response time is {{ $value }}s, above 5s threshold"
+          
+      # Low cache hit rate alert
+      - alert: BioneuroLowCacheHitRate
+        expr: (bioneuro_cache_hits_total / (bioneuro_cache_hits_total + bioneuro_cache_misses_total)) < 0.7
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Low cache hit rate in Bioneural system"
+          description: "Cache hit rate is {{ $value | humanizePercentage }}, below 70% threshold"
+          
+      # Service down alert
+      - alert: BioneuroServiceDown
+        expr: up{job="bioneuro-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Bioneural API service is down"
+          description: "Bioneural API service has been down for more than 1 minute"
+          
+      # High CPU usage alert
+      - alert: BioneuroHighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{name="bioneuro-api"}[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage in Bioneural container"
+          description: "CPU usage is {{ $value }}%, above 80% threshold"
+          
+      # Receptor anomaly alert
+      - alert: BioneuroReceptorAnomaly
+        expr: increase(bioneuro_receptor_anomalies_total[15m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Multiple receptor anomalies detected"
+          description: "{{ $value }} receptor anomalies detected in the last 15 minutes"
+          
+      # Document processing queue backlog
+      - alert: BioneuroProcessingBacklog
+        expr: bioneuro_document_queue_size > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Document processing queue backlog"
+          description: "{{ $value }} documents in processing queue, above 100 threshold"
