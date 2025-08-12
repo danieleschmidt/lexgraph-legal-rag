@@ -1,62 +1,61 @@
 {
-  "timestamp": 1754321928.283652,
-  "overall_status": "NEEDS_ATTENTION",
-  "summary": {
-    "total_gates": 5,
-    "passed": 4,
-    "failed": 1,
-    "warnings": 0
-  },
+  "timestamp": 1755031998.0602942,
+  "overall_passed": false,
+  "overall_score": 0.6128345868556103,
+  "gates_passed": 2,
+  "total_gates": 4,
   "results": {
-    "file_structure": {
-      "status": "PASS",
-      "message": "All 7 essential files present",
+    "Code Quality": {
+      "name": "Code Quality",
+      "passed": false,
+      "score": 0.6227490505404616,
       "details": {
-        "present_files": 7,
-        "missing_files": [],
-        "total_required": 7
-      }
+        "syntax_score": 1.0,
+        "complexity_score": 0.02,
+        "style_score": 0.8482471516213848,
+        "threshold": 0.8
+      },
+      "errors": []
     },
-    "configuration": {
-      "status": "PASS",
-      "message": "Configuration complete",
+    "Security": {
+      "name": "Security",
+      "passed": true,
+      "score": 0.9666666666666667,
       "details": {
-        "issues": []
-      }
+        "vulnerabilities_score": 0.94,
+        "secrets_score": 1.0,
+        "imports_score": 0.96,
+        "threshold": 0.9
+      },
+      "errors": [
+        "Potential vulnerability in src/lexgraph_legal_rag/quality_gates.py: exec(",
+        "Potential vulnerability in src/lexgraph_legal_rag/validation.py: input(",
+        "Potential vulnerability in src/lexgraph_legal_rag/validation_fixed.py: input(",
+        "Insecure import in src/lexgraph_legal_rag/distributed_processing.py: import pickle",
+        "Insecure import in src/lexgraph_legal_rag/bioneuro_optimization.py: import pickle"
+      ]
     },
-    "documentation": {
-      "status": "PASS",
-      "message": "Documentation complete (1 optional docs missing)",
-      "details": {
-        "missing_required": [],
-        "missing_optional": [
-          "docs/API_GUIDE.md"
-        ],
-        "readme_issues": []
-      }
+    "Performance": {
+      "name": "Performance",
+      "passed": false,
+      "score": 0.0,
+      "details": {},
+      "errors": [
+        "No module named 'sklearn'"
+      ]
     },
-    "code_quality": {
-      "status": "PASS",
-      "message": "Good code quality (score: 0.98)",
+    "Documentation": {
+      "name": "Documentation",
+      "passed": true,
+      "score": 0.8619226302153131,
       "details": {
-        "python_files": 30,
-        "total_lines": 9055,
-        "avg_lines_per_file": 301.8333333333333,
-        "docstring_coverage": 1.0,
-        "type_hint_coverage": 0.9666666666666667,
-        "quality_score": 0.9833333333333334
-      }
-    },
-    "security": {
-      "status": "FAIL",
-      "message": "3 security issues found",
-      "details": {
-        "issues": [
-          "hardcoded API key in auth.py",
-          "hardcoded API key in config.py",
-          "hardcoded API key in health_monitoring.py"
-        ]
-      }
+        "file_score": 1.0,
+        "docstring_score": 0.8714821763602252,
+        "readme_score": 0.7142857142857143,
+        "threshold": 0.8
+      },
+      "errors": []
     }
-  }
+  },
+  "recommendation": "NEEDS_IMPROVEMENT"
 }
