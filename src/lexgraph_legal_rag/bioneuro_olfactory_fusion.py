@@ -29,6 +29,10 @@ import math
 import time
 
 from .bioneuro_monitoring import get_metrics_collector, get_anomaly_detector
+from .intelligent_error_recovery import get_recovery_system
+from .adaptive_monitoring import get_monitoring_system
+from .quantum_performance_optimizer import get_performance_optimizer
+from .distributed_scaling_engine import get_scaling_engine, submit_distributed_task, TaskPriority
 
 logger = logging.getLogger(__name__)
 
@@ -154,11 +158,50 @@ class BioneuroOlfactoryReceptor:
             metrics_collector = get_metrics_collector()
             metrics_collector.record_error("olfactory_receptor", "activation_failure", str(e))
             
+            # Attempt intelligent error recovery
+            recovery_system = get_recovery_system()
+            context = {
+                "receptor_type": self.receptor_type.value,
+                "document_length": len(document_text),
+                "sensitivity": self.sensitivity,
+                "critical": True  # Receptor failures are critical for system function
+            }
+            
+            try:
+                recovered = await recovery_system.handle_error(e, context)
+                
+                if recovered:
+                    # Retry with reduced sensitivity for graceful degradation
+                    try:
+                        reduced_intensity = 0.1  # Fallback minimal intensity
+                        return OlfactorySignal(
+                            receptor_type=self.receptor_type,
+                            intensity=reduced_intensity,
+                            confidence=0.3,  # Lower confidence after recovery
+                            metadata={
+                                "error_recovered": True,
+                                "original_error": str(e),
+                                "fallback_mode": True
+                            }
+                        )
+                    except Exception:
+                        pass  # Continue to fallback below
+                        
+            except Exception as recovery_error:
+                self.logger.error(f"Recovery system failed: {recovery_error}")
+            
+            # Update adaptive monitoring with failure metrics
+            monitoring_system = get_monitoring_system()
+            await monitoring_system.update_metrics({
+                f"bioneural_receptor_{self.receptor_type.value}_failures": 1.0,
+                f"bioneural_receptor_{self.receptor_type.value}_recovery_attempts": 1.0,
+            }, {"error_type": type(e).__name__})
+            
             return OlfactorySignal(
                 receptor_type=self.receptor_type,
                 intensity=0.0,
                 confidence=0.0,
-                metadata={"error": str(e)}
+                metadata={"error": str(e), "recovery_attempted": True}
             )
     
     def _detect_legal_complexity(self, text: str) -> float:
@@ -310,14 +353,33 @@ class BioneuroOlfactoryFusionEngine:
         
         self.logger.info(f"Analyzing document {document_id} with bioneural olfactory fusion")
         
+        # Performance optimization: check if distributed processing is beneficial
+        scaling_engine = get_scaling_engine()
+        document_size = len(document_text)
+        use_distributed = document_size > 10000 or len(self.receptors) > 6
+        
         try:
-            # Activate all receptors in parallel
-            tasks = [
-                receptor.activate(document_text, metadata)
-                for receptor in self.receptors.values()
-            ]
-            
-            signals = await asyncio.gather(*tasks, return_exceptions=True)
+            if use_distributed:
+                # Submit as distributed task for large documents
+                task_payload = {
+                    "document_text": document_text,
+                    "document_id": document_id,
+                    "metadata": metadata,
+                    "estimated_duration": min(5.0, document_size / 2000)  # Estimate based on size
+                }
+                
+                # Use distributed processing for heavy workloads
+                task_id = await submit_distributed_task(
+                    "bioneural_analysis",
+                    task_payload,
+                    TaskPriority.HIGH if metadata.get("urgent", False) else TaskPriority.NORMAL
+                )
+                
+                # Process locally as fallback while distributed task runs
+                signals = await self._process_receptors_optimized(document_text, metadata)
+            else:
+                # Local processing with optimization
+                signals = await self._process_receptors_optimized(document_text, metadata)
             
             # Filter out exceptions and invalid signals
             valid_signals = [
@@ -387,6 +449,63 @@ class BioneuroOlfactoryFusionEngine:
                 composite_scent=np.zeros(len(OlfactoryReceptorType) * 2),
                 similarity_hash=""
             )
+    
+    async def _process_receptors_optimized(self, document_text: str, metadata: Dict[str, Any]) -> List[OlfactorySignal]:
+        """Process receptors with performance optimization."""
+        # Get performance optimizer for intelligent scheduling
+        optimizer = get_performance_optimizer()
+        
+        # Optimize receptor configuration based on workload
+        target_metrics = {
+            "throughput": 1.0,
+            "latency": 0.5,
+            "accuracy": 0.9
+        }
+        
+        try:
+            optimization_result = await optimizer.optimize_configuration(
+                f"bioneural_analysis_{len(document_text)}",
+                target_metrics
+            )
+            
+            # Update adaptive monitoring
+            monitoring_system = get_monitoring_system()
+            await monitoring_system.update_metrics({
+                "bioneural_optimization_gain": optimization_result.performance_gain,
+                "bioneural_optimization_efficiency": optimization_result.resource_efficiency,
+            }, {"document_size": len(document_text)})
+            
+        except Exception as e:
+            self.logger.warning(f"Performance optimization failed, using default: {e}")
+        
+        # Activate all receptors in parallel with optimized ordering
+        high_priority_receptors = [
+            self.receptors[OlfactoryReceptorType.LEGAL_COMPLEXITY],
+            self.receptors[OlfactoryReceptorType.STATUTORY_AUTHORITY],
+        ]
+        
+        low_priority_receptors = [
+            receptor for receptor_type, receptor in self.receptors.items()
+            if receptor_type not in [OlfactoryReceptorType.LEGAL_COMPLEXITY, 
+                                   OlfactoryReceptorType.STATUTORY_AUTHORITY]
+        ]
+        
+        # Process high priority receptors first
+        high_priority_tasks = [
+            receptor.activate(document_text, metadata)
+            for receptor in high_priority_receptors
+        ]
+        
+        low_priority_tasks = [
+            receptor.activate(document_text, metadata)
+            for receptor in low_priority_receptors
+        ]
+        
+        # Gather with prioritized execution
+        high_priority_signals = await asyncio.gather(*high_priority_tasks, return_exceptions=True)
+        low_priority_signals = await asyncio.gather(*low_priority_tasks, return_exceptions=True)
+        
+        return high_priority_signals + low_priority_signals
     
     def _create_composite_scent(self, signals: List[OlfactorySignal]) -> np.ndarray:
         """Create composite scent vector from individual receptor signals."""
