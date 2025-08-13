@@ -1,18 +1,18 @@
 {
-  "timestamp": 1755031998.0602942,
-  "overall_passed": false,
-  "overall_score": 0.6128345868556103,
-  "gates_passed": 2,
+  "timestamp": 1755129005.6523702,
+  "overall_passed": true,
+  "overall_score": 0.8636865041516221,
+  "gates_passed": 3,
   "total_gates": 4,
   "results": {
     "Code Quality": {
       "name": "Code Quality",
       "passed": false,
-      "score": 0.6227490505404616,
+      "score": 0.6222580010054038,
       "details": {
         "syntax_score": 1.0,
-        "complexity_score": 0.02,
-        "style_score": 0.8482471516213848,
+        "complexity_score": 0.018518518518518517,
+        "style_score": 0.8482554844976928,
         "threshold": 0.8
       },
       "errors": []
@@ -20,42 +20,45 @@
     "Security": {
       "name": "Security",
       "passed": true,
-      "score": 0.9666666666666667,
+      "score": 0.9691358024691358,
       "details": {
-        "vulnerabilities_score": 0.94,
+        "vulnerabilities_score": 0.9444444444444444,
         "secrets_score": 1.0,
-        "imports_score": 0.96,
+        "imports_score": 0.9629629629629629,
         "threshold": 0.9
       },
       "errors": [
         "Potential vulnerability in src/lexgraph_legal_rag/quality_gates.py: exec(",
         "Potential vulnerability in src/lexgraph_legal_rag/validation.py: input(",
         "Potential vulnerability in src/lexgraph_legal_rag/validation_fixed.py: input(",
-        "Insecure import in src/lexgraph_legal_rag/distributed_processing.py: import pickle",
-        "Insecure import in src/lexgraph_legal_rag/bioneuro_optimization.py: import pickle"
+        "Insecure import in src/lexgraph_legal_rag/bioneuro_optimization.py: import pickle",
+        "Insecure import in src/lexgraph_legal_rag/distributed_processing.py: import pickle"
       ]
     },
     "Performance": {
       "name": "Performance",
-      "passed": false,
-      "score": 0.0,
-      "details": {},
-      "errors": [
-        "No module named 'sklearn'"
-      ]
+      "passed": true,
+      "score": 1.0,
+      "details": {
+        "olfactory_score": 1.0,
+        "multisensory_score": 1.0,
+        "memory_score": 1.0,
+        "threshold": 0.7
+      },
+      "errors": []
     },
     "Documentation": {
       "name": "Documentation",
       "passed": true,
-      "score": 0.8619226302153131,
+      "score": 0.8633522131319489,
       "details": {
         "file_score": 1.0,
-        "docstring_score": 0.8714821763602252,
+        "docstring_score": 0.8757709251101321,
         "readme_score": 0.7142857142857143,
         "threshold": 0.8
       },
       "errors": []
     }
   },
-  "recommendation": "NEEDS_IMPROVEMENT"
+  "recommendation": "PRODUCTION_READY"
 }
