@@ -1,0 +1,14 @@
+{
+  "timestamp": 1755244302.5104082,
+  "test_duration": 0.14479994773864746,
+  "tests_run": 9,
+  "failures": 1,
+  "errors": 0,
+  "success_rate": 0.8888888888888888,
+  "details": {
+    "failures": [
+      "test_accuracy_validation (__main__.TestPerformanceValidation.test_accuracy_validation)"
+    ],
+    "errors": []
+  }
+}

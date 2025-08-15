@@ -1,0 +1,132 @@
+{
+  "timestamp": 1755244415.7728384,
+  "scenarios_tested": 3,
+  "results": [
+    {
+      "document_id": "doc_001",
+      "processing_record_id": "record_000001",
+      "analysis": {
+        "primary_scent": "legal_complexity",
+        "intensity": 0.4666666666666666,
+        "receptor_activations": {
+          "legal_complexity": 1.0,
+          "statutory_authority": 0.3,
+          "temporal_freshness": 0.8,
+          "citation_density": 0.0,
+          "risk_profile": 0.0,
+          "semantic_coherence": 0.7
+        },
+        "document_signature": "legal_2436"
+      },
+      "privacy_notice": "Privacy Notice: Your document will be analyzed using bioneural olfactory fusion technology.",
+      "success_message": "Document analysis completed successfully.",
+      "data_retention_notice": "Data will be retained for 365 days as per compliance requirements.",
+      "compliance": {
+        "region": "eu_gdpr",
+        "compliant": true,
+        "violations": [],
+        "warnings": [],
+        "score": 1.0
+      },
+      "language": "en",
+      "region": "eu_gdpr",
+      "data_anonymized": true,
+      "anonymization_notice": "Personal data has been anonymized for privacy protection."
+    },
+    {
+      "document_id": "doc_002",
+      "processing_record_id": "record_000002",
+      "analysis": {
+        "primary_scent": "semantic_coherence",
+        "intensity": 0.38208333333333333,
+        "receptor_activations": {
+          "legal_complexity": 0.275,
+          "statutory_authority": 0.3,
+          "temporal_freshness": 0.8,
+          "citation_density": 0.0,
+          "risk_profile": 0.0,
+          "semantic_coherence": 0.9175
+        },
+        "document_signature": "legal_2317"
+      },
+      "privacy_notice": "Aviso de Privacidad: Su documento será analizado usando tecnología de fusión olfatoria bioneural.",
+      "success_message": "Análisis de documento completado exitosamente.",
+      "data_retention_notice": "Los datos se conservarán durante 365 días según los requisitos de cumplimiento.",
+      "compliance": {
+        "region": "eu_gdpr",
+        "compliant": true,
+        "violations": [],
+        "warnings": [],
+        "score": 1.0
+      },
+      "language": "es",
+      "region": "eu_gdpr",
+      "data_anonymized": true,
+      "anonymization_notice": "Los datos personales han sido anonimizados para protección de privacidad."
+    },
+    {
+      "error": "consent_required",
+      "message": "Consent required for processing legal documents.",
+      "privacy_notice": "Privacy Notice: Your document will be analyzed using bioneural olfactory fusion technology."
+    }
+  ],
+  "compliance_report": {
+    "generated_at": 1755244415.7725353,
+    "total_processing_records": 2,
+    "regions_covered": [
+      "eu_gdpr"
+    ],
+    "compliance_summary": {},
+    "data_protection_measures": {
+      "anonymization_enabled": true,
+      "consent_required": true,
+      "data_retention_days": 365
+    },
+    "processing_activities": {
+      "by_region": {
+        "eu_gdpr": 2
+      },
+      "by_legal_basis": {
+        "consent": 2
+      },
+      "recent_activities": [
+        {
+          "document_id": "doc_001",
+          "purpose": "legal_document_analysis",
+          "legal_basis": "consent",
+          "consent": true,
+          "timestamp": 1755244415.772328
+        },
+        {
+          "document_id": "doc_002",
+          "purpose": "legal_document_analysis",
+          "legal_basis": "consent",
+          "consent": true,
+          "timestamp": 1755244415.7724876
+        }
+      ]
+    }
+  },
+  "supported_regions": [
+    "eu_gdpr",
+    "us_ccpa",
+    "us_hipaa",
+    "uk_dpa",
+    "ca_pipeda",
+    "sg_pdpa",
+    "br_lgpd",
+    "jp_appi"
+  ],
+  "supported_languages": [
+    "en",
+    "es",
+    "fr",
+    "de",
+    "ja",
+    "zh-cn",
+    "pt",
+    "it",
+    "nl",
+    "ko"
+  ]
+}

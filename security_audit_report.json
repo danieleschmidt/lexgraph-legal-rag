@@ -1,0 +1,39 @@
+{
+  "timestamp": 1755244320.2270372,
+  "overall_security_score": 0.75,
+  "input_sanitization": {
+    "tested_inputs": 12,
+    "safe_processing": 12,
+    "failed_inputs": [],
+    "security_score": 1.0
+  },
+  "data_privacy": {
+    "documents_tested": 5,
+    "pii_leaked": 5,
+    "data_anonymized": 0,
+    "privacy_score": 0.0,
+    "potential_leaks": [
+      "Pattern \\b\\d{3}\\b in analysis",
+      "Pattern \\b\\d{3}\\b in analysis",
+      "Pattern \\d{5} in analysis",
+      "Pattern \\b\\d{3}\\b in analysis",
+      "Pattern \\b\\d{3}\\b in analysis"
+    ]
+  },
+  "resource_limits": {
+    "memory_limit_test": true,
+    "cpu_limit_test": true,
+    "time_limit_test": true,
+    "resource_score": 1.0,
+    "max_memory_mb": 0.0,
+    "max_processing_time": 0.015608072280883789
+  },
+  "cryptographic_security": {
+    "signature_uniqueness": true,
+    "signature_consistency": true,
+    "signature_unpredictability": true,
+    "crypto_score": 1.0,
+    "collision_rate": 0.0
+  },
+  "security_level": "ADEQUATE"
+}

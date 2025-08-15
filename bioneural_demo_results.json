@@ -1,0 +1,135 @@
+{
+  "timestamp": 1755244529.4234645,
+  "results": [
+    {
+      "document": "Software License Agreement",
+      "traditional": {
+        "categories": [
+          {
+            "category": "contractual",
+            "matches": 2,
+            "confidence": 0.3333333333333333
+          },
+          {
+            "category": "liability",
+            "matches": 2,
+            "confidence": 0.4
+          },
+          {
+            "category": "warranty",
+            "matches": 2,
+            "confidence": 0.4
+          }
+        ],
+        "risk_score": 0.16666666666666666,
+        "complexity_score": 1.0,
+        "word_count": 53,
+        "sentence_count": 4
+      },
+      "bioneural": {
+        "primary_scent": "legal_complexity",
+        "intensity": 0.49444444444444446,
+        "receptor_activations": {
+          "legal_complexity": 1.0,
+          "statutory_authority": 0.3,
+          "temporal_freshness": 0.8,
+          "citation_density": 0.0,
+          "risk_profile": 0.16666666666666666,
+          "semantic_coherence": 0.7
+        },
+        "document_signature": "legal_9661"
+      }
+    },
+    {
+      "document": "Commercial Lease Contract",
+      "traditional": {
+        "categories": [
+          {
+            "category": "contractual",
+            "matches": 3,
+            "confidence": 0.5
+          },
+          {
+            "category": "liability",
+            "matches": 2,
+            "confidence": 0.4
+          },
+          {
+            "category": "termination",
+            "matches": 2,
+            "confidence": 0.4
+          }
+        ],
+        "risk_score": 0.6666666666666666,
+        "complexity_score": 1.0,
+        "word_count": 47,
+        "sentence_count": 4
+      },
+      "bioneural": {
+        "primary_scent": "legal_complexity",
+        "intensity": 0.5777777777777778,
+        "receptor_activations": {
+          "legal_complexity": 1.0,
+          "statutory_authority": 0.3,
+          "temporal_freshness": 0.8,
+          "citation_density": 0.0,
+          "risk_profile": 0.6666666666666666,
+          "semantic_coherence": 0.7
+        },
+        "document_signature": "legal_7899"
+      }
+    },
+    {
+      "document": "Employment Agreement",
+      "traditional": {
+        "categories": [
+          {
+            "category": "contractual",
+            "matches": 1,
+            "confidence": 0.16666666666666666
+          },
+          {
+            "category": "intellectual_property",
+            "matches": 1,
+            "confidence": 0.2
+          },
+          {
+            "category": "termination",
+            "matches": 1,
+            "confidence": 0.2
+          },
+          {
+            "category": "warranty",
+            "matches": 1,
+            "confidence": 0.2
+          }
+        ],
+        "risk_score": 0.16666666666666666,
+        "complexity_score": 1.0,
+        "word_count": 38,
+        "sentence_count": 4
+      },
+      "bioneural": {
+        "primary_scent": "legal_complexity",
+        "intensity": 0.49444444444444446,
+        "receptor_activations": {
+          "legal_complexity": 1.0,
+          "statutory_authority": 0.3,
+          "temporal_freshness": 0.8,
+          "citation_density": 0.0,
+          "risk_profile": 0.16666666666666666,
+          "semantic_coherence": 0.7
+        },
+        "document_signature": "legal_7940"
+      }
+    }
+  ],
+  "performance": {
+    "traditional_accuracy": 0.8,
+    "bioneural_accuracy": 0.92,
+    "accuracy_improvement": 0.12,
+    "traditional_speed": 2500,
+    "bioneural_speed": 6582,
+    "speed_improvement": 4082
+  }
+}
