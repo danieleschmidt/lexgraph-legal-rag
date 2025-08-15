@@ -1,0 +1,101 @@
+{
+  "timestamp": 1755244242.3610911,
+  "benchmark_results": {
+    "single": {
+      "total_documents_processed": 200,
+      "total_processing_time": 0.0031168460845947266,
+      "average_throughput_docs_per_sec": 86413.34478952401,
+      "cache_hit_rate": 0.975,
+      "memory_usage_mb": 0.0,
+      "processing_mode": "single",
+      "max_workers": 4,
+      "iterations": [
+        {
+          "iteration": 1,
+          "processing_time": 0.0023491382598876953,
+          "throughput": 42568.801380290264,
+          "documents_processed": 100
+        },
+        {
+          "iteration": 2,
+          "processing_time": 0.0007677078247070312,
+          "throughput": 130257.88819875776,
+          "documents_processed": 100
+        }
+      ]
+    },
+    "threaded": {
+      "total_documents_processed": 200,
+      "total_processing_time": 0.012899637222290039,
+      "average_throughput_docs_per_sec": 19171.371806209754,
+      "cache_hit_rate": 0.975,
+      "memory_usage_mb": 0.0,
+      "processing_mode": "threaded",
+      "max_workers": 4,
+      "iterations": [
+        {
+          "iteration": 1,
+          "processing_time": 0.009270668029785156,
+          "throughput": 10786.709186297707,
+          "documents_processed": 100
+        },
+        {
+          "iteration": 2,
+          "processing_time": 0.003628969192504883,
+          "throughput": 27556.034426121805,
+          "documents_processed": 100
+        }
+      ]
+    },
+    "async": {
+      "total_documents_processed": 200,
+      "total_processing_time": 0.011167049407958984,
+      "average_throughput_docs_per_sec": 23298.793162315116,
+      "cache_hit_rate": 0.97,
+      "memory_usage_mb": 0.0,
+      "processing_mode": "async",
+      "max_workers": 4,
+      "iterations": [
+        {
+          "iteration": 1,
+          "processing_time": 0.00826883316040039,
+          "throughput": 12093.60475174442,
+          "documents_processed": 100
+        },
+        {
+          "iteration": 2,
+          "processing_time": 0.0028982162475585938,
+          "throughput": 34503.981572885816,
+          "documents_processed": 100
+        }
+      ]
+    },
+    "hybrid": {
+      "total_documents_processed": 200,
+      "total_processing_time": 0.00900888442993164,
+      "average_throughput_docs_per_sec": 40707.71125006144,
+      "cache_hit_rate": 0.965,
+      "memory_usage_mb": 0.0,
+      "processing_mode": "hybrid",
+      "max_workers": 4,
+      "iterations": [
+        {
+          "iteration": 1,
+          "processing_time": 0.007541656494140625,
+          "throughput": 13259.686393525544,
+          "documents_processed": 100
+        },
+        {
+          "iteration": 2,
+          "processing_time": 0.0014672279357910156,
+          "throughput": 68155.73610659734,
+          "documents_processed": 100
+        }
+      ]
+    }
+  },
+  "system_info": {
+    "cpu_count": 2,
+    "python_version": "3.12.3 (main, Jun 18 2025, 17:59:45) [GCC 13.3.0]"
+  }
+}
