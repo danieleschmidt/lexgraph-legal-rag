@@ -164,7 +164,7 @@ class QuantumPerformanceOptimizer:
     def _create_quantum_state(self, configuration: Dict[str, Any]) -> QuantumState:
         """Create quantum state representation of configuration."""
         # Convert configuration to quantum state
-        config_hash = hashlib.md5(json.dumps(configuration, sort_keys=True).encode()).hexdigest()
+        config_hash = hashlib.md5(json.dumps(configuration, sort_keys=True).encode(), usedforsecurity=False).hexdigest()
         
         # Calculate energy based on configuration efficiency
         energy = sum(

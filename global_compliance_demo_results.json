@@ -1,5 +1,5 @@
 {
-  "timestamp": 1755244415.7728384,
+  "timestamp": 1755355438.7417939,
   "scenarios_tested": 3,
   "results": [
     {
@@ -16,7 +16,7 @@
           "risk_profile": 0.0,
           "semantic_coherence": 0.7
         },
-        "document_signature": "legal_2436"
+        "document_signature": "legal_8753"
       },
       "privacy_notice": "Privacy Notice: Your document will be analyzed using bioneural olfactory fusion technology.",
       "success_message": "Document analysis completed successfully.",
@@ -47,7 +47,7 @@
           "risk_profile": 0.0,
           "semantic_coherence": 0.9175
         },
-        "document_signature": "legal_2317"
+        "document_signature": "legal_8688"
       },
       "privacy_notice": "Aviso de Privacidad: Su documento será analizado usando tecnología de fusión olfatoria bioneural.",
       "success_message": "Análisis de documento completado exitosamente.",
@@ -71,7 +71,7 @@
     }
   ],
   "compliance_report": {
-    "generated_at": 1755244415.7725353,
+    "generated_at": 1755355438.7416413,
     "total_processing_records": 2,
     "regions_covered": [
       "eu_gdpr"
@@ -95,14 +95,14 @@
           "purpose": "legal_document_analysis",
           "legal_basis": "consent",
           "consent": true,
-          "timestamp": 1755244415.772328
+          "timestamp": 1755355438.7414715
         },
         {
           "document_id": "doc_002",
           "purpose": "legal_document_analysis",
           "legal_basis": "consent",
           "consent": true,
-          "timestamp": 1755244415.7724876
+          "timestamp": 1755355438.7416017
         }
       ]
     }
