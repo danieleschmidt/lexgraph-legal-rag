@@ -533,7 +533,7 @@ class BioneuroOlfactoryFusionEngine:
         # Quantize scent vector and create hash
         quantized = (composite_scent * 1000).astype(int)
         hash_input = json.dumps(quantized.tolist()).encode('utf-8')
-        return hashlib.md5(hash_input).hexdigest()
+        return hashlib.md5(hash_input, usedforsecurity=False).hexdigest()
     
     async def find_similar_documents(self, query_profile: DocumentScentProfile, 
                                    similarity_threshold: float = 0.8,

@@ -349,7 +349,7 @@ class AnomalyDetector:
             behavior['total_queries'] += 1
             
             # Generate query hash for pattern detection
-            query_hash = hashlib.md5(query.lower().encode()).hexdigest()
+            query_hash = hashlib.md5(query.lower().encode(), usedforsecurity=False).hexdigest()
             behavior['query_hashes'].append(query_hash)
             
             # Check for rapid identical queries
