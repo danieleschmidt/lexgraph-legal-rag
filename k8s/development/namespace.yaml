@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    environment: development
+    name: bioneural-olfactory-fusion-development
+  name: bioneural-olfactory-fusion-development

@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  cache_size: '100'
+  environment: staging
+  log_level: DEBUG
+  metrics_enabled: 'true'
+  worker_threads: '2'
+kind: ConfigMap
+metadata:
+  name: bioneural-olfactory-fusion-config
+  namespace: bioneural-olfactory-fusion-staging

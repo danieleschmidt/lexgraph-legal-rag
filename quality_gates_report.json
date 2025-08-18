@@ -1,64 +1,343 @@
 {
-  "timestamp": 1755355413.3886802,
-  "overall_passed": true,
-  "overall_score": 0.8636865041516221,
-  "gates_passed": 3,
-  "total_gates": 4,
-  "results": {
-    "Code Quality": {
-      "name": "Code Quality",
-      "passed": false,
-      "score": 0.6222580010054038,
-      "details": {
-        "syntax_score": 1.0,
-        "complexity_score": 0.018518518518518517,
-        "style_score": 0.8482554844976928,
-        "threshold": 0.8
-      },
-      "errors": []
-    },
-    "Security": {
-      "name": "Security",
-      "passed": true,
-      "score": 0.9691358024691358,
-      "details": {
-        "vulnerabilities_score": 0.9444444444444444,
-        "secrets_score": 1.0,
-        "imports_score": 0.9629629629629629,
-        "threshold": 0.9
-      },
-      "errors": [
-        "Potential vulnerability in src/lexgraph_legal_rag/quality_gates.py: exec(",
-        "Potential vulnerability in src/lexgraph_legal_rag/validation.py: input(",
-        "Potential vulnerability in src/lexgraph_legal_rag/validation_fixed.py: input(",
-        "Insecure import in src/lexgraph_legal_rag/bioneuro_optimization.py: import pickle",
-        "Insecure import in src/lexgraph_legal_rag/distributed_processing.py: import pickle"
-      ]
-    },
-    "Performance": {
-      "name": "Performance",
+  "timestamp": 1755480109.3382094,
+  "total_execution_time": 6.74666166305542,
+  "overall_status": "FAILED",
+  "overall_score": 0.9523609257555122,
+  "gates_passed": 7,
+  "gates_total": 8,
+  "pass_rate": 0.875,
+  "quality_gates": [
+    {
+      "gate_name": "Performance Benchmark",
       "passed": true,
       "score": 1.0,
+      "duration": 0.07920289039611816,
+      "errors": [],
       "details": {
-        "olfactory_score": 1.0,
-        "multisensory_score": 1.0,
-        "memory_score": 1.0,
-        "threshold": 0.7
-      },
-      "errors": []
+        "g1_results": {
+          "test_name": "Benchmark_G1",
+          "generation": "G1",
+          "documents_processed": 15,
+          "total_time": 0.014454841613769531,
+          "avg_time_per_doc": 0.0009636561075846354,
+          "throughput": 1037.7145873193904,
+          "memory_peak": 0.0,
+          "cpu_usage_avg": 6.913333333333333,
+          "errors": 0
+        },
+        "g2_results": {
+          "test_name": "Benchmark_G2",
+          "generation": "G2",
+          "documents_processed": 15,
+          "total_time": 0.024338960647583008,
+          "avg_time_per_doc": 0.001622597376505534,
+          "throughput": 616.2958319047852,
+          "memory_peak": 0.0,
+          "cpu_usage_avg": 8.333333333333334,
+          "errors": 0
+        },
+        "g3_results": {
+          "test_name": "Benchmark_G3",
+          "generation": "G3",
+          "documents_processed": 15,
+          "total_time": 0.03992056846618652,
+          "avg_time_per_doc": 0.0026613712310791016,
+          "throughput": 375.7461523301023,
+          "memory_peak": 0.57421875,
+          "cpu_usage_avg": 13.333333333333334,
+          "errors": 0
+        },
+        "requirements": {
+          "max_avg_time_per_doc": 1.0,
+          "min_throughput": 10.0,
+          "max_memory_usage": 500.0,
+          "max_error_rate": 0.05
+        }
+      }
     },
-    "Documentation": {
-      "name": "Documentation",
+    {
+      "gate_name": "Security Validation",
       "passed": true,
-      "score": 0.8633522131319489,
+      "score": 1.0,
+      "duration": 0.9036436080932617,
+      "errors": [],
       "details": {
-        "file_score": 1.0,
-        "docstring_score": 0.8757709251101321,
-        "readme_score": 0.7142857142857143,
-        "threshold": 0.8
-      },
-      "errors": []
+        "security_tests": [
+          {
+            "test": "input_validation",
+            "passed": true,
+            "score": 1.0
+          },
+          {
+            "test": "memory_safety",
+            "passed": true,
+            "score": 1.0
+          },
+          {
+            "test": "concurrent_safety",
+            "passed": true,
+            "score": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "gate_name": "Memory Leak Detection",
+      "passed": true,
+      "score": 1.0,
+      "duration": 5.325473308563232,
+      "errors": [],
+      "details": {
+        "initial_memory_mb": 210.22265625,
+        "final_memory_mb": 210.22265625,
+        "memory_increase_mb": 0.0,
+        "memory_growth_rate_mb_per_interval": 0.0,
+        "iterations": 50,
+        "memory_readings": [
+          210.22265625,
+          210.22265625,
+          210.22265625,
+          210.22265625,
+          210.22265625,
+          210.22265625
+        ]
+      }
+    },
+    {
+      "gate_name": "Error Handling Validation",
+      "passed": true,
+      "score": 0.8333333333333334,
+      "duration": 0.0974280834197998,
+      "errors": [],
+      "details": {
+        "total_scenarios": 6,
+        "graceful_handling_count": 5,
+        "error_details": [
+          {
+            "scenario": "empty_string",
+            "handled_gracefully": true,
+            "result": "Processed successfully"
+          },
+          {
+            "scenario": "none_input",
+            "handled_gracefully": false,
+            "error": "Should have failed but didn't"
+          },
+          {
+            "scenario": "invalid_characters",
+            "handled_gracefully": true,
+            "result": "Processed successfully"
+          },
+          {
+            "scenario": "extremely_long",
+            "handled_gracefully": true,
+            "result": "Processed successfully"
+          },
+          {
+            "scenario": "invalid_unicode",
+            "handled_gracefully": true,
+            "result": "Processed successfully"
+          },
+          {
+            "scenario": "binary_data",
+            "handled_gracefully": true,
+            "result": "Processed successfully"
+          }
+        ]
+      }
+    },
+    {
+      "gate_name": "Load Testing",
+      "passed": true,
+      "score": 0.9919823161760966,
+      "duration": 0.24994301795959473,
+      "errors": [],
+      "details": {
+        "concurrent_clients": 20,
+        "requests_per_client": 5,
+        "total_requests": 100,
+        "successful_requests": 100,
+        "success_rate": 1.0,
+        "avg_response_time": 0.04810610294342041,
+        "max_response_time": 0.061033010482788086,
+        "throughput": 400.21717412192857,
+        "load_duration": 0.2498643398284912
+      }
+    },
+    {
+      "gate_name": "Accuracy Validation",
+      "passed": true,
+      "score": 1.0,
+      "duration": 0.002466440200805664,
+      "errors": [],
+      "details": {
+        "test_cases": [
+          {
+            "name": "high_complexity_legal",
+            "text": "WHEREAS, notwithstanding the heretofore mentioned provisions, pursuant to the aforementioned regulations...",
+            "expected_receptors": [
+              "legal_complexity"
+            ],
+            "min_intensity": 0.3
+          },
+          {
+            "name": "statutory_references",
+            "text": "15 U.S.C. \u00a7 1681 and Section 501(c)(3) of the Internal Revenue Code and 26 CFR 1.501",
+            "expected_receptors": [
+              "statutory_authority"
+            ],
+            "min_intensity": 0.4
+          },
+          {
+            "name": "risk_indicators",
+            "text": "LIABILITY, PENALTIES, DAMAGES, INDEMNIFICATION, BREACH, VIOLATION of this agreement",
+            "expected_receptors": [
+              "risk_profile"
+            ],
+            "min_intensity": 0.5
+          },
+          {
+            "name": "citation_heavy",
+            "text": "Brown v. Board, 347 U.S. 483 (1954); Plessy v. Ferguson, 163 U.S. 537 (1896); Id. at 495",
+            "expected_receptors": [
+              "citation_density"
+            ],
+            "min_intensity": 0.3
+          }
+        ],
+        "accuracy_results": [
+          {
+            "test_case": "high_complexity_legal",
+            "passed": true,
+            "receptor_results": {
+              "legal_complexity": {
+                "intensity": 0.5352666666666666,
+                "confidence": 1.0,
+                "meets_threshold": true
+              }
+            }
+          },
+          {
+            "test_case": "statutory_references",
+            "passed": true,
+            "receptor_results": {
+              "statutory_authority": {
+                "intensity": 0.8,
+                "confidence": 1.0,
+                "meets_threshold": true
+              }
+            }
+          },
+          {
+            "test_case": "risk_indicators",
+            "passed": true,
+            "receptor_results": {
+              "risk_profile": {
+                "intensity": 0.6400000000000001,
+                "confidence": 1.0,
+                "meets_threshold": true
+              }
+            }
+          },
+          {
+            "test_case": "citation_heavy",
+            "passed": true,
+            "receptor_results": {
+              "citation_density": {
+                "intensity": 0.7,
+                "confidence": 1.0,
+                "meets_threshold": true
+              }
+            }
+          }
+        ],
+        "total_passed": 4,
+        "total_cases": 4
+      }
+    },
+    {
+      "gate_name": "Scalability Validation",
+      "passed": true,
+      "score": 1.0,
+      "duration": 0.07579565048217773,
+      "errors": [],
+      "details": {
+        "scalability_tests": [
+          {
+            "size_category": "small",
+            "document_count": 10,
+            "total_time": 0.02298903465270996,
+            "throughput": 434.98999201435345
+          },
+          {
+            "size_category": "medium",
+            "document_count": 5,
+            "total_time": 0.03554797172546387,
+            "throughput": 140.65500103957774
+          },
+          {
+            "size_category": "large",
+            "document_count": 2,
+            "total_time": 0.017184019088745117,
+            "throughput": 116.38720776968435
+          }
+        ],
+        "thresholds": {
+          "min_small_throughput": 5.0,
+          "min_medium_throughput": 2.0,
+          "min_large_throughput": 0.5
+        }
+      }
+    },
+    {
+      "gate_name": "Integration Testing",
+      "passed": false,
+      "score": 0.7935717565346677,
+      "duration": 0.012423992156982422,
+      "errors": [],
+      "details": {
+        "integration_tests": [
+          {
+            "test": "cross_generation_consistency",
+            "passed": false,
+            "score": 0.5871435130693354
+          },
+          {
+            "test": "end_to_end_workflow",
+            "passed": true,
+            "score": 1.0
+          }
+        ]
+      }
     }
+  ],
+  "performance_summary": {
+    "total_benchmarks": 3,
+    "benchmark_results": [
+      {
+        "generation": "G1",
+        "throughput": 1037.7145873193904,
+        "avg_time_per_doc": 0.0009636561075846354,
+        "memory_peak": 0.0,
+        "errors": 0
+      },
+      {
+        "generation": "G2",
+        "throughput": 616.2958319047852,
+        "avg_time_per_doc": 0.001622597376505534,
+        "memory_peak": 0.0,
+        "errors": 0
+      },
+      {
+        "generation": "G3",
+        "throughput": 375.7461523301023,
+        "avg_time_per_doc": 0.0026613712310791016,
+        "memory_peak": 0.57421875,
+        "errors": 0
+      }
+    ]
   },
-  "recommendation": "PRODUCTION_READY"
+  "recommendations": [
+    "Fix integration issues and ensure cross-component compatibility"
+  ]
 }

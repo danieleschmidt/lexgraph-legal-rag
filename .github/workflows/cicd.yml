@@ -1,0 +1,74 @@
+env:
+  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: ghcr.io
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    needs:
+    - test
+    - security
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Log in to Container Registry
+      uses: docker/login-action@v2
+      with:
+        password: ${{ secrets.GITHUB_TOKEN }}
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+    - id: meta
+      name: Extract metadata
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: type=ref,event=branch\ntype=ref,event=pr\ntype=sha,prefix={{branch}}-\ntype=raw,value=latest,enable={{is_default_branch}}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile.production
+        labels: ${{ steps.meta.outputs.labels }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+  deploy:
+    environment: production
+    if: github.ref == 'refs/heads/main'
+    needs:
+    - build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Deploy to Kubernetes
+      run: kubectl apply -f k8s/production/ && kubectl rollout status deployment/bioneural-olfactory-fusion-api
+        -n bioneural-olfactory-fusion-production
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run security scan
+      run: pip install bandit safety && bandit -r src/ && safety check
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Run tests
+      run: python -m pytest tests/ -v --cov=src
+    - name: Run quality gates
+      run: python comprehensive_quality_gates.py
+name: CI/CD Pipeline
+'on':
+  pull_request:
+    branches:
+    - main
+  push:
+    branches:
+    - main
+    - develop
