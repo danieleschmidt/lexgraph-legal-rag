@@ -10,7 +10,7 @@ httpx>=0.28.0,<0.29.0
 
 # Machine Learning & AI
 scikit-learn>=1.7.0,<1.8.0
-faiss-cpu>=1.11.0,<1.12.0
+faiss-cpu>=1.11.0,<1.13.0
 
 # Logging and Monitoring
 structlog>=24.1.0,<25.0.0
