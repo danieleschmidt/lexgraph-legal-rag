@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Iterable, List, Tuple, Any
-from pathlib import Path
-
 import json
+from dataclasses import dataclass
+from dataclasses import field
+from pathlib import Path
+from typing import Any
+from typing import Iterable
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from .metrics import SEARCH_LATENCY, SEARCH_REQUESTS
-
+from .metrics import SEARCH_LATENCY
+from .metrics import SEARCH_REQUESTS
 from .models import LegalDocument
 
 
@@ -25,10 +26,10 @@ class EmbeddingModel:
         default_factory=lambda: TfidfVectorizer(stop_words="english")
     )
 
-    def fit_transform(self, texts: List[str]):
+    def fit_transform(self, texts: list[str]):
         return self.vectorizer.fit_transform(texts)
 
-    def transform(self, texts: List[str]):
+    def transform(self, texts: list[str]):
         return self.vectorizer.transform(texts)
 
 
@@ -38,10 +39,10 @@ class EmbeddingIndex:
 
     model: EmbeddingModel = field(default_factory=EmbeddingModel)
     _matrix: Any | None = None
-    _docs: List[LegalDocument] = field(default_factory=list)
+    _docs: list[LegalDocument] = field(default_factory=list)
 
     @property
-    def documents(self) -> List[LegalDocument]:
+    def documents(self) -> list[LegalDocument]:
         return self._docs
 
     def add(self, docs: Iterable[LegalDocument]) -> None:
@@ -71,7 +72,7 @@ class EmbeddingIndex:
         if docs:
             self.add(docs)
 
-    def search(self, query: str, top_k: int = 5) -> List[Tuple[LegalDocument, float]]:
+    def search(self, query: str, top_k: int = 5) -> list[tuple[LegalDocument, float]]:
         if self._matrix is None:
             return []
         with SEARCH_LATENCY.labels(search_type="semantic").time():
@@ -83,30 +84,34 @@ class EmbeddingIndex:
             results = [(self._docs[i], float(scores[i])) for i in indices]
         SEARCH_REQUESTS.labels(search_type="semantic").inc()
         return results
-    
-    def batch_search(self, queries: List[str], top_k: int = 5) -> List[List[Tuple[LegalDocument, float]]]:
+
+    def batch_search(
+        self, queries: list[str], top_k: int = 5
+    ) -> list[list[tuple[LegalDocument, float]]]:
         """Perform batch search for multiple queries efficiently."""
         if self._matrix is None:
             return [[] for _ in queries]
-        
+
         results = []
         with SEARCH_LATENCY.labels(search_type="semantic_batch").time():
             # Transform all queries at once for better efficiency
             query_vecs = self.model.transform(queries)
             # Compute all similarity scores in one batch operation
             all_scores = cosine_similarity(query_vecs, self._matrix)
-            
-            for i, query in enumerate(queries):
+
+            for i, _query in enumerate(queries):
                 scores = all_scores[i]
                 if not len(scores):
                     results.append([])
                     continue
-                
+
                 # Get top_k results for this query
                 indices = np.argsort(scores)[::-1][:top_k]
-                query_results = [(self._docs[idx], float(scores[idx])) for idx in indices]
+                query_results = [
+                    (self._docs[idx], float(scores[idx])) for idx in indices
+                ]
                 results.append(query_results)
-        
+
         SEARCH_REQUESTS.labels(search_type="semantic_batch").inc(len(queries))
         return results
 
@@ -121,11 +126,13 @@ class SemanticSearchPipeline:
         """Add a collection of documents to the index."""
         self.index.add(docs)
 
-    def search(self, query: str, top_k: int = 5) -> List[Tuple[LegalDocument, float]]:
+    def search(self, query: str, top_k: int = 5) -> list[tuple[LegalDocument, float]]:
         """Return documents most relevant to ``query`` according to embedding similarity."""
         return self.index.search(query, top_k=top_k)
-    
-    def batch_search(self, queries: List[str], top_k: int = 5) -> List[List[Tuple[LegalDocument, float]]]:
+
+    def batch_search(
+        self, queries: list[str], top_k: int = 5
+    ) -> list[list[tuple[LegalDocument, float]]]:
         """Return documents most relevant to multiple queries using batch processing."""
         return self.index.batch_search(queries, top_k=top_k)
 

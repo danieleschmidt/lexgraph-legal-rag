@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 
 import structlog
+
 from .correlation import CorrelationIdProcessor
 
 
@@ -17,7 +18,7 @@ def configure_logging(level: int = logging.INFO) -> None:
             CorrelationIdProcessor(),
             structlog.processors.TimeStamper(fmt="ISO"),
             structlog.processors.add_log_level,
-            structlog.processors.JSONRenderer()
+            structlog.processors.JSONRenderer(),
         ],
         wrapper_class=structlog.make_filtering_bound_logger(level),
         logger_factory=structlog.PrintLoggerFactory(),
