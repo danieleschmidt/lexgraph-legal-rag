@@ -1,26 +1,30 @@
 """Custom exception hierarchy for LexGraph Legal RAG system."""
 
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Type
+from typing import TypeVar
 
 
-T = TypeVar('T', bound='LexGraphError')
+T = TypeVar("T", bound="LexGraphError")
 
 
 class LexGraphError(Exception):
     """Base exception for all LexGraph Legal RAG errors."""
-    
+
     def __init__(
         self,
         message: str,
         error_code: Optional[str] = None,
         details: Optional[Dict[str, Any]] = None,
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
     ):
         super().__init__(message)
         self.error_code = error_code
         self.details = details
         self.context = context or {}
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert exception to dictionary for API responses."""
         return {
@@ -28,9 +32,9 @@ class LexGraphError(Exception):
             "message": str(self),
             "error_code": self.error_code,
             "details": self.details,
-            "context": self.context
+            "context": self.context,
         }
-    
+
     @classmethod
     def from_dict(cls: Type[T], error_dict: Dict[str, Any]) -> T:
         """Create exception from dictionary."""
@@ -39,7 +43,7 @@ class LexGraphError(Exception):
         error_code = error_dict.get("error_code")
         details = error_dict.get("details")
         context = error_dict.get("context", {})
-        
+
         # Map error type to appropriate class
         error_classes = {
             "ConfigurationError": ConfigurationError,
@@ -58,81 +62,96 @@ class LexGraphError(Exception):
             "ValidationError": ValidationError,
             "ExternalServiceError": ExternalServiceError,
         }
-        
+
         error_class = error_classes.get(error_type, LexGraphError)
         return error_class(message, error_code, details, context)
 
 
 class ConfigurationError(LexGraphError):
     """Raised when there are configuration-related errors."""
+
     pass
 
 
 class AuthenticationError(LexGraphError):
     """Raised when authentication fails."""
+
     pass
 
 
 class AuthorizationError(LexGraphError):
     """Raised when authorization fails."""
+
     pass
 
 
 class APIKeyError(AuthenticationError):
     """Raised when API key is invalid or missing."""
+
     pass
 
 
 class RateLimitError(AuthorizationError):
     """Raised when rate limits are exceeded."""
+
     pass
 
 
 class DocumentError(LexGraphError):
     """Base exception for document-related errors."""
+
     pass
 
 
 class DocumentNotFoundError(DocumentError):
     """Raised when a document cannot be found."""
+
     pass
 
 
 class DocumentParsingError(DocumentError):
     """Raised when document parsing fails."""
+
     pass
 
 
 class IndexError(LexGraphError):
     """Base exception for index-related errors."""
+
     pass
 
 
 class IndexCorruptedError(IndexError):
     """Raised when index corruption is detected."""
+
     pass
 
 
 class IndexNotFoundError(IndexError):
     """Raised when an index cannot be found."""
+
     pass
 
 
 class SearchError(LexGraphError):
     """Base exception for search-related errors."""
+
     pass
 
 
 class QueryError(SearchError):
     """Raised when query parsing or execution fails."""
+
     pass
 
 
 class ValidationError(LexGraphError):
     """Raised when input validation fails."""
+
     pass
 
 
 class ExternalServiceError(LexGraphError):
     """Raised when external service calls fail."""
+
     pass
