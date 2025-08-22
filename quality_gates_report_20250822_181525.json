@@ -1,0 +1,144 @@
+{
+  "timestamp": "2025-08-22T18:15:25.888831",
+  "overall_passed": false,
+  "overall_score": 5.3110824742268035,
+  "summary": {
+    "total_gates": 10,
+    "passed_gates": 6,
+    "failed_gates": 4,
+    "execution_time": 29.666650772094727,
+    "pass_rate": 60.0
+  },
+  "gates": [
+    {
+      "gate_name": "Unit Tests",
+      "passed": false,
+      "score": 0.0,
+      "details": {
+        "coverage_percent": 0,
+        "tests_passed": false,
+        "stdout": "verage ================================\n_______________ coverage: platform linux, python 3.12.3-final-0 ________________\n\nFAIL Required test coverage of 80% not reached. Total coverage: 0.00%\n=========================== short test summary info ============================\nFAILED test_enhanced_resilience_g2.py::TestEnhancedResilienceSystem::test_input_validation\nFAILED test_enhanced_resilience_g2.py::TestSecurityHardeningSystem::test_string_sanitization\nFAILED test_enhanced_resilience_g2.py::TestSecurityHardeningSystem::test_sql_injection_detection\nFAILED test_enhanced_resilience_g2.py::TestSecurityHardeningSystem::test_dictionary_sanitization\nFAILED test_enhanced_resilience_g2.py::TestIntegratedResilience::test_resilience_with_security\nFAILED test_generation3_scaling.py::TestIntelligentCachingSystem::test_ttl_expiration\nFAILED test_generation3_scaling.py::TestIntelligentCachingSystem::test_cache_hierarchy\n========================= 7 failed, 37 passed in 8.81s =========================\n",
+        "stderr": "ag was never imported. (module-not-imported)\n  self.warn(f\"Module {pkg} was never imported.\", slug=\"module-not-imported\")\n/usr/local/lib/python3.12/dist-packages/coverage/control.py:943: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n/usr/local/lib/python3.12/dist-packages/pytest_cov/plugin.py:358: CovReportWarning: Failed to generate report: No data to report.\n\n  warnings.warn(CovReportWarning(message), stacklevel=1)\n"
+      },
+      "errors": [
+        "Some tests failed",
+        "Coverage 0.0% below threshold 80.0%"
+      ],
+      "execution_time": 13.447831392288208
+    },
+    {
+      "gate_name": "Integration Tests",
+      "passed": true,
+      "score": 8.0,
+      "details": {
+        "scent_signals": 5,
+        "analysis_confidence": 0.5720614924087993,
+        "primary_channel": "olfactory"
+      },
+      "errors": [],
+      "execution_time": 2.0449187755584717
+    },
+    {
+      "gate_name": "Security Scan",
+      "passed": false,
+      "score": 0.0,
+      "details": {
+        "high_severity_issues": 9,
+        "medium_severity_issues": 4,
+        "low_severity_issues": 15,
+        "total_issues": 28
+      },
+      "errors": [
+        "9 high severity security issues",
+        "4 medium severity security issues"
+      ],
+      "execution_time": 9.586448192596436
+    },
+    {
+      "gate_name": "Performance Benchmarks",
+      "passed": false,
+      "score": 0.0,
+      "details": {},
+      "errors": [
+        "Performance benchmark failed: 'BioneuroOlfactoryFusionEngine' object has no attribute 'analyze_document_scent'"
+      ],
+      "execution_time": 0.00010514259338378906
+    },
+    {
+      "gate_name": "Code Quality Analysis",
+      "passed": true,
+      "score": 10.0,
+      "details": {
+        "error_count": 0,
+        "warning_count": 0,
+        "total_issues": 0
+      },
+      "errors": [],
+      "execution_time": 4.394005537033081
+    },
+    {
+      "gate_name": "Documentation Validation",
+      "passed": true,
+      "score": 9.11082474226804,
+      "details": {
+        "total_functions": 776,
+        "documented_functions": 707,
+        "documentation_coverage": 91.1082474226804
+      },
+      "errors": [],
+      "execution_time": 0.02500295639038086
+    },
+    {
+      "gate_name": "Bioneural System Tests",
+      "passed": false,
+      "score": 2.0,
+      "details": {
+        "return_code": 0,
+        "output_length": 2272
+      },
+      "errors": [
+        "Bioneural system tests failed"
+      ],
+      "execution_time": 0.1534285545349121
+    },
+    {
+      "gate_name": "Resilience System Tests",
+      "passed": true,
+      "score": 8.0,
+      "details": {
+        "basic_test_passed": true
+      },
+      "errors": [],
+      "execution_time": 0.004286050796508789
+    },
+    {
+      "gate_name": "Scaling System Tests",
+      "passed": true,
+      "score": 8.0,
+      "details": {
+        "quantum_optimizer_efficiency": 0.7142857142857143,
+        "cache_test_passed": true
+      },
+      "errors": [],
+      "execution_time": 0.0072782039642333984
+    },
+    {
+      "gate_name": "Compliance Checks",
+      "passed": true,
+      "score": 8.0,
+      "details": {
+        "required_files_present": 3,
+        "tests_present": true
+      },
+      "errors": [],
+      "execution_time": 0.0006084442138671875
+    }
+  ],
+  "recommendations": [
+    "Improve Unit Tests: Add more tests and increase coverage",
+    "Address security issues in Security Scan",
+    "Optimize performance for Performance Benchmarks",
+    "Improve Bioneural System Tests: Add more tests and increase coverage",
+    "Overall quality score is below target (7.0/10.0)"
+  ]
+}
