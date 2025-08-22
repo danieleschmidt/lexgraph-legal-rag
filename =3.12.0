@@ -1,0 +1,38 @@
+Collecting pytest
+  Downloading pytest-8.4.1-py3-none-any.whl.metadata (7.7 kB)
+Collecting pytest-cov
+  Downloading pytest_cov-6.2.1-py3-none-any.whl.metadata (30 kB)
+Collecting pytest-xdist
+  Downloading pytest_xdist-3.8.0-py3-none-any.whl.metadata (3.0 kB)
+Collecting pytest-asyncio
+  Downloading pytest_asyncio-1.1.0-py3-none-any.whl.metadata (4.1 kB)
+Collecting pytest-mock
+  Downloading pytest_mock-3.14.1-py3-none-any.whl.metadata (3.9 kB)
+Collecting iniconfig>=1 (from pytest)
+  Downloading iniconfig-2.1.0-py3-none-any.whl.metadata (2.7 kB)
+Requirement already satisfied: packaging>=20 in /usr/local/lib/python3.12/dist-packages (from pytest) (25.0)
+Collecting pluggy<2,>=1.5 (from pytest)
+  Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+Collecting pygments>=2.7.2 (from pytest)
+  Downloading pygments-2.19.2-py3-none-any.whl.metadata (2.5 kB)
+Collecting coverage>=7.5 (from coverage[toml]>=7.5->pytest-cov)
+  Downloading coverage-7.10.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (8.9 kB)
+Collecting execnet>=2.1 (from pytest-xdist)
+  Downloading execnet-2.1.1-py3-none-any.whl.metadata (2.9 kB)
+Downloading pytest-8.4.1-py3-none-any.whl (365 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 365.5/365.5 kB 16.0 MB/s eta 0:00:00
+Downloading pytest_cov-6.2.1-py3-none-any.whl (24 kB)
+Downloading pytest_xdist-3.8.0-py3-none-any.whl (46 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 46.4/46.4 kB 5.0 MB/s eta 0:00:00
+Downloading pytest_asyncio-1.1.0-py3-none-any.whl (15 kB)
+Downloading pytest_mock-3.14.1-py3-none-any.whl (9.9 kB)
+Downloading coverage-7.10.4-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (251 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 251.2/251.2 kB 21.1 MB/s eta 0:00:00
+Downloading execnet-2.1.1-py3-none-any.whl (40 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.6/40.6 kB 4.2 MB/s eta 0:00:00
+Downloading iniconfig-2.1.0-py3-none-any.whl (6.0 kB)
+Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+Downloading pygments-2.19.2-py3-none-any.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 46.4 MB/s eta 0:00:00
+Installing collected packages: pygments, pluggy, iniconfig, execnet, coverage, pytest, pytest-xdist, pytest-mock, pytest-cov, pytest-asyncio
+Successfully installed coverage-7.10.4 execnet-2.1.1 iniconfig-2.1.0 pluggy-1.6.0 pygments-2.19.2 pytest-8.4.1 pytest-asyncio-1.1.0 pytest-cov-6.2.1 pytest-mock-3.14.1 pytest-xdist-3.8.0
