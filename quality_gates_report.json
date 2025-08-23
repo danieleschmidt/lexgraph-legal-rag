@@ -1,18 +1,18 @@
 {
-  "timestamp": 1755802967.2483273,
-  "overall_passed": true,
-  "overall_score": 0.879384501049535,
-  "gates_passed": 3,
+  "timestamp": 1755964373.2514436,
+  "overall_passed": false,
+  "overall_score": 0.6219176812110622,
+  "gates_passed": 2,
   "total_gates": 4,
   "results": {
     "Code Quality": {
       "name": "Code Quality",
       "passed": false,
-      "score": 0.6727043095847098,
+      "score": 0.6633337591279725,
       "details": {
         "syntax_score": 1.0,
-        "complexity_score": 0.018518518518518517,
-        "style_score": 0.9995944102356108,
+        "complexity_score": 0.016666666666666666,
+        "style_score": 0.973334610717251,
         "threshold": 0.8
       },
       "errors": []
@@ -20,43 +20,45 @@
     "Security": {
       "name": "Security",
       "passed": true,
-      "score": 0.9814814814814815,
+      "score": 0.9611111111111111,
       "details": {
-        "vulnerabilities_score": 0.9444444444444444,
+        "vulnerabilities_score": 0.9166666666666666,
         "secrets_score": 1.0,
-        "imports_score": 1.0,
+        "imports_score": 0.9666666666666667,
         "threshold": 0.9
       },
       "errors": [
+        "Potential vulnerability in src/lexgraph_legal_rag/enhanced_resilience_patterns.py: eval(",
+        "Potential vulnerability in src/lexgraph_legal_rag/enhanced_resilience_patterns.py: exec(",
         "Potential vulnerability in src/lexgraph_legal_rag/quality_gates.py: exec(",
+        "Potential vulnerability in src/lexgraph_legal_rag/security_hardening_enhanced.py: input(",
         "Potential vulnerability in src/lexgraph_legal_rag/validation.py: input(",
-        "Potential vulnerability in src/lexgraph_legal_rag/validation_fixed.py: input("
+        "Potential vulnerability in src/lexgraph_legal_rag/validation_fixed.py: input(",
+        "Insecure import in src/lexgraph_legal_rag/adaptive_learning_system.py: import pickle",
+        "Insecure import in src/lexgraph_legal_rag/intelligent_caching_system.py: import pickle"
       ]
     },
     "Performance": {
       "name": "Performance",
-      "passed": true,
-      "score": 1.0,
-      "details": {
-        "olfactory_score": 1.0,
-        "multisensory_score": 1.0,
-        "memory_score": 1.0,
-        "threshold": 0.7
-      },
-      "errors": []
+      "passed": false,
+      "score": 0.0,
+      "details": {},
+      "errors": [
+        "No module named 'faiss'"
+      ]
     },
     "Documentation": {
       "name": "Documentation",
       "passed": true,
-      "score": 0.8633522131319489,
+      "score": 0.8632258546051649,
       "details": {
         "file_score": 1.0,
-        "docstring_score": 0.8757709251101321,
+        "docstring_score": 0.8753918495297806,
         "readme_score": 0.7142857142857143,
         "threshold": 0.8
       },
       "errors": []
     }
   },
-  "recommendation": "PRODUCTION_READY"
+  "recommendation": "NEEDS_IMPROVEMENT"
 }
