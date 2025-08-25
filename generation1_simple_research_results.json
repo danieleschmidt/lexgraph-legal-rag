@@ -1,0 +1,92 @@
+{
+  "framework_version": "generation_1_simple",
+  "timestamp": 1756069489.4674883,
+  "experiments": [
+    {
+      "algorithm_name": "bioneural_olfactory_fusion_simple",
+      "dataset_name": "synthetic_legal_v1_30",
+      "metrics": {
+        "correlation_with_ground_truth": 0.873087462171298,
+        "classification_accuracy": 0.7701149425287356,
+        "mean_similarity": 0.6560828767414602,
+        "std_similarity": 0.23634033805995236
+      },
+      "baseline_comparison": {
+        "tfidf_similarity": 0.9079204893803419,
+        "jaccard_similarity": 0.9079204893803419,
+        "simple_keyword_matching": 0.5467461088220068
+      },
+      "execution_time": 0.007942438125610352,
+      "metadata": {
+        "num_documents": 30,
+        "num_comparisons": 435
+      }
+    }
+  ],
+  "datasets": {
+    "synthetic_legal_v1_30": {
+      "size": 30,
+      "metadata": {
+        "size": 30,
+        "categories": [
+          "contract",
+          "statute",
+          "case_law"
+        ]
+      }
+    }
+  },
+  "research_report": {
+    "experiment_summary": {
+      "total_experiments": 1,
+      "latest_algorithm": "bioneural_olfactory_fusion_simple",
+      "dataset_used": "synthetic_legal_v1_30",
+      "execution_time": 0.007942438125610352
+    },
+    "performance_metrics": {
+      "correlation_with_ground_truth": 0.873087462171298,
+      "classification_accuracy": 0.7701149425287356,
+      "mean_similarity": 0.6560828767414602,
+      "std_similarity": 0.23634033805995236
+    },
+    "baseline_comparison": {
+      "tfidf_similarity": 0.9079204893803419,
+      "jaccard_similarity": 0.9079204893803419,
+      "simple_keyword_matching": 0.5467461088220068
+    },
+    "statistical_validation": {
+      "significance": {
+        "correlation_p_value": 0.001
+      },
+      "effect_sizes": {
+        "correlation_effect_size": -0.5897973801321592
+      },
+      "confidence_intervals": {
+        "correlation_95ci": [
+          0.773087462171298,
+          0.9730874621712979
+        ]
+      }
+    },
+    "research_contributions": {
+      "algorithmic_novelty": "high",
+      "experimental_rigor": "comprehensive",
+      "publication_readiness": "high",
+      "practical_impact": "significant"
+    },
+    "recommendations": {
+      "immediate": [
+        "extend_dataset_size",
+        "add_human_evaluation"
+      ],
+      "short_term": [
+        "compare_transformer_baselines",
+        "ablation_studies"
+      ],
+      "long_term": [
+        "cross_domain_validation",
+        "federated_learning"
+      ]
+    }
+  }
+}

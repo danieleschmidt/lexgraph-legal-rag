@@ -1,0 +1,329 @@
+{
+  "overall_score": 0.7489447479379531,
+  "total_gates": 7,
+  "passed_gates": 1,
+  "failed_gates": 1,
+  "warning_gates": 5,
+  "execution_time": 0.863783597946167,
+  "production_readiness": "development_ready",
+  "recommendations": [
+    "Code quality could be improved",
+    "Generation 2 performance improvement marginal",
+    "Some integration issues identified",
+    "Fix API integration errors",
+    "Some compliance issues need attention",
+    "Generation 3 performance improvement less than expected",
+    "Address medium-severity vulnerabilities",
+    "Address privacy compliance issues",
+    "Address production readiness gaps before deployment",
+    "Refactor high-complexity functions"
+  ],
+  "gate_results": [
+    {
+      "gate_name": "functional_testing",
+      "status": "passed",
+      "score": 1.0,
+      "execution_time": 0.2666435241699219,
+      "critical_issues_count": 0,
+      "recommendations_count": 0
+    },
+    {
+      "gate_name": "performance_benchmarking",
+      "status": "warning",
+      "score": 0.7666666666666666,
+      "execution_time": 0.001234292984008789,
+      "critical_issues_count": 0,
+      "recommendations_count": 3
+    },
+    {
+      "gate_name": "security_validation",
+      "status": "failed",
+      "score": 0.5249999999999999,
+      "execution_time": 0.36237168312072754,
+      "critical_issues_count": 1,
+      "recommendations_count": 1
+    },
+    {
+      "gate_name": "code_quality_analysis",
+      "status": "warning",
+      "score": 0.6220179974704336,
+      "execution_time": 0.1517190933227539,
+      "critical_issues_count": 0,
+      "recommendations_count": 3
+    },
+    {
+      "gate_name": "integration_testing",
+      "status": "warning",
+      "score": 0.7749999999999999,
+      "execution_time": 0.0005943775177001953,
+      "critical_issues_count": 0,
+      "recommendations_count": 2
+    },
+    {
+      "gate_name": "compliance_validation",
+      "status": "warning",
+      "score": 0.7825000000000001,
+      "execution_time": 0.038735389709472656,
+      "critical_issues_count": 0,
+      "recommendations_count": 2
+    },
+    {
+      "gate_name": "production_readiness_assessment",
+      "status": "warning",
+      "score": 0.7714285714285715,
+      "execution_time": 0.040343284606933594,
+      "critical_issues_count": 0,
+      "recommendations_count": 1
+    }
+  ],
+  "security_assessment": {
+    "code_vulnerabilities": {
+      "files_scanned": 61,
+      "total_issues": 27,
+      "critical_vulnerabilities": 3,
+      "high_vulnerabilities": 8,
+      "medium_vulnerabilities": 16,
+      "vulnerability_details": [
+        {
+          "file": "autonomous_quality_gate_runner.py",
+          "type": "hardcoded_secrets",
+          "severity": "high",
+          "count": 4
+        },
+        {
+          "file": "enhanced_bioneural_fusion_g1.py",
+          "type": "weak_crypto",
+          "severity": "medium",
+          "count": 3
+        },
+        {
+          "file": "production_deployment.py",
+          "type": "sql_injection",
+          "severity": "critical",
+          "count": 2
+        },
+        {
+          "file": "quantum_scaling_optimization_engine.py",
+          "type": "weak_crypto",
+          "severity": "medium",
+          "count": 1
+        },
+        {
+          "file": "robust_bioneural_system_g2.py",
+          "type": "weak_crypto",
+          "severity": "medium",
+          "count": 2
+        },
+        {
+          "file": "run_quality_gates.py",
+          "type": "unsafe_eval",
+          "severity": "high",
+          "count": 2
+        },
+        {
+          "file": "run_quality_gates.py",
+          "type": "shell_injection",
+          "severity": "critical",
+          "count": 1
+        },
+        {
+          "file": "scalable_bioneural_system_g3.py",
+          "type": "weak_crypto",
+          "severity": "medium",
+          "count": 4
+        },
+        {
+          "file": "test_api.py",
+          "type": "hardcoded_secrets",
+          "severity": "high",
+          "count": 1
+        },
+        {
+          "file": "test_bioneuro_minimal.py",
+          "type": "weak_crypto",
+          "severity": "medium",
+          "count": 1
+        },
+        {
+          "file": "test_bioneuro_standalone.py",
+          "type": "weak_crypto",
+          "severity": "medium",
+          "count": 1
+        },
+        {
+          "file": "test_enhanced_resilience_g2.py",
+          "type": "hardcoded_secrets",
+          "severity": "high",
+          "count": 1
+        },
+        {
+          "file": "generation2_robust_bioneural_system.py",
+          "type": "weak_crypto",
+          "severity": "medium",
+          "count": 1
+        },
+        {
+          "file": "generation3_scalable_bioneural_system.py",
+          "type": "weak_crypto",
+          "severity": "medium",
+          "count": 3
+        }
+      ],
+      "scan_status": "completed"
+    },
+    "dependency_security": {
+      "dependencies_found": 386,
+      "dependencies": [
+        "pytest",
+        "scikit-learn",
+        "fastapi",
+        "httpx",
+        "faiss-cpu",
+        "structlog",
+        "prometheus-client",
+        "pytest-cov",
+        "pytest-xdist",
+        "pre-commit"
+      ],
+      "potential_security_issues": 4,
+      "security_issues": [
+        "Potentially vulnerable dependency: E",
+        "Potentially vulnerable dependency: I",
+        "Potentially vulnerable dependency: B",
+        "Potentially vulnerable dependency: S"
+      ],
+      "secure_dependencies": false,
+      "analysis_status": "completed"
+    },
+    "data_protection": {
+      "protection_checks": [
+        {
+          "check": "encryption_usage",
+          "passed": true,
+          "score": 0.8
+        },
+        {
+          "check": "pii_handling",
+          "passed": true,
+          "score": 0.9
+        },
+        {
+          "check": "data_sanitization",
+          "passed": true,
+          "score": 0.7
+        }
+      ],
+      "protection_score": 0.7999999999999999,
+      "checks_passed": 3,
+      "total_checks": 3,
+      "validation_status": "completed"
+    },
+    "access_control": {
+      "access_checks": [
+        {
+          "check": "authentication_mechanisms",
+          "passed": true,
+          "score": 0.8
+        },
+        {
+          "check": "authorization_patterns",
+          "passed": true,
+          "score": 0.7
+        },
+        {
+          "check": "secure_defaults",
+          "passed": true,
+          "score": 0.9
+        }
+      ],
+      "access_score": 0.7999999999999999,
+      "checks_passed": 3,
+      "total_checks": 3,
+      "verification_status": "completed"
+    },
+    "encryption_compliance": {}
+  },
+  "performance_benchmarks": {
+    "generation_1_performance": {
+      "throughput": 3777.177678383814,
+      "latency": 0.00026474793752034507,
+      "documents_processed": 30,
+      "execution_time": 0.007942438125610352,
+      "status": "completed"
+    },
+    "generation_2_performance": {
+      "throughput": 418.33436396640803,
+      "latency": 0.002390432357788086,
+      "documents_processed": 40,
+      "execution_time": 0.09561729431152344,
+      "reliability_score": 0.95,
+      "status": "completed"
+    },
+    "generation_3_performance": {
+      "throughput": 2942.371854050975,
+      "latency": 0.0003398618698120117,
+      "documents_processed": 500,
+      "execution_time": 0.16993093490600586,
+      "cache_hit_rate": 0.7,
+      "scaling_efficiency": 0.45974560219546484,
+      "optimization_gain": 1,
+      "status": "completed"
+    },
+    "comparative_analysis": {
+      "g2_vs_g1_improvement": 0.11075316005399188,
+      "g3_vs_g1_improvement": 0.7789868797779094,
+      "g3_vs_g2_improvement": 7.033540888568373,
+      "peak_throughput": 3777.177678383814,
+      "performance_trend": "mixed",
+      "optimization_effectiveness": -0.22101312022209063
+    },
+    "resource_utilization": {
+      "cpu_utilization": 0.3,
+      "memory_utilization": 0.4,
+      "resource_efficiency": "estimated"
+    }
+  },
+  "compliance_status": {
+    "licensing_compliance": {
+      "license_files_found": 1,
+      "has_license": true,
+      "license_types": [
+        "MIT"
+      ],
+      "compliance_score": 0.8,
+      "missing_licenses": 0
+    },
+    "regulatory_compliance": {
+      "compliance_documentation": 3,
+      "has_compliance_docs": true,
+      "gdpr_compliance": true,
+      "data_protection_compliance": true,
+      "compliance_score": 0.8
+    },
+    "industry_standards": {
+      "pep8_compliance": false,
+      "code_style_standards": true,
+      "documentation_standards": true,
+      "testing_standards": true,
+      "compliance_score": 0.7200000000000001
+    },
+    "privacy_compliance": {
+      "privacy_policy": true,
+      "data_handling_documented": true,
+      "pii_protection": false,
+      "privacy_issues": 1,
+      "compliance_score": 0.81
+    }
+  },
+  "metadata": {
+    "system_info": {
+      "python_version": "3.12.3 (main, Jun 18 2025, 17:59:45) [GCC 13.3.0]",
+      "platform": "linux",
+      "working_directory": "/root/repo",
+      "timestamp": 1756070489.4882898,
+      "security_level": "enhanced"
+    },
+    "security_level": "enhanced",
+    "quality_gates_version": "1.0.0"
+  }
+}
