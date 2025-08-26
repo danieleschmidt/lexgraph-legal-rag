@@ -1,0 +1,137 @@
+{
+  "status": "critical",
+  "timestamp": "2025-08-26T05:29:59.838580",
+  "active_alerts": [
+    {
+      "id": "high_error_rate_1756186199",
+      "severity": "AlertSeverity.WARNING",
+      "title": "Alert: high_error_rate",
+      "description": "Error rate exceeds 10%",
+      "metric_name": "error_rate",
+      "threshold": 0.1,
+      "actual_value": 0.2,
+      "timestamp": "2025-08-26 05:29:59.837008",
+      "resolved": false,
+      "resolution_time": null
+    },
+    {
+      "id": "bioneural_failure_rate_1756186199",
+      "severity": "AlertSeverity.ERROR",
+      "title": "Alert: bioneural_failure_rate",
+      "description": "Bioneural analysis failure rate exceeds 5%",
+      "metric_name": "bioneural_failure_rate",
+      "threshold": 0.05,
+      "actual_value": 0.2,
+      "timestamp": "2025-08-26 05:29:59.838323",
+      "resolved": false,
+      "resolution_time": null
+    }
+  ],
+  "metrics_summary": {
+    "timestamp": "2025-08-26T05:29:53.911205",
+    "system": {
+      "memory_stats": {
+        "count": 1,
+        "min": 15.8,
+        "max": 15.8,
+        "mean": 15.8,
+        "median": 15.8,
+        "std_dev": 0,
+        "percentile_95": 15.8,
+        "percentile_99": 15.8
+      },
+      "cpu_usage": {}
+    },
+    "bioneural": {
+      "accuracy_stats": {
+        "count": 1,
+        "min": 0.9499023410054593,
+        "max": 0.9499023410054593,
+        "mean": 0.9499023410054593,
+        "median": 0.9499023410054593,
+        "std_dev": 0,
+        "percentile_95": 0.9499023410054593,
+        "percentile_99": 0.9499023410054593
+      },
+      "processing_time_stats": {
+        "count": 2,
+        "min": 0.05,
+        "max": 0.12889109140323882,
+        "mean": 0.08944554570161942,
+        "median": 0.08944554570161942,
+        "std_dev": 0.05578442570643791,
+        "percentile_95": 0.1959485190959918,
+        "percentile_99": 0.20541545006438044
+      },
+      "receptor_performance": {
+        "legal_complexity": {
+          "count": 3,
+          "min": 0.7637011720148359,
+          "max": 0.9491177207269192,
+          "mean": 0.8868154936980466,
+          "median": 0.9476275883523846,
+          "std_dev": 0.10662273339331167,
+          "percentile_95": 0.950309826626547,
+          "percentile_99": 0.9505482478064724
+        },
+        "statutory_authority": {
+          "count": 3,
+          "min": 0.7637011720148359,
+          "max": 0.9491177207269192,
+          "mean": 0.8868154936980466,
+          "median": 0.9476275883523846,
+          "std_dev": 0.10662273339331167,
+          "percentile_95": 0.950309826626547,
+          "percentile_99": 0.9505482478064724
+        },
+        "temporal_freshness": {
+          "count": 3,
+          "min": 0.7637011720148359,
+          "max": 0.9491177207269192,
+          "mean": 0.8868154936980466,
+          "median": 0.9476275883523846,
+          "std_dev": 0.10662273339331167,
+          "percentile_95": 0.950309826626547,
+          "percentile_99": 0.9505482478064724
+        }
+      }
+    },
+    "requests": {
+      "total_requests": {
+        "count": 1,
+        "min": 1,
+        "max": 1,
+        "mean": 1,
+        "median": 1,
+        "std_dev": 0,
+        "percentile_95": 1,
+        "percentile_99": 1
+      },
+      "error_rate": {
+        "count": 1,
+        "min": 1,
+        "max": 1,
+        "mean": 1,
+        "median": 1,
+        "std_dev": 0,
+        "percentile_95": 1,
+        "percentile_99": 1
+      },
+      "response_time": {
+        "count": 1,
+        "min": 0.1,
+        "max": 0.1,
+        "mean": 0.1,
+        "median": 0.1,
+        "std_dev": 0,
+        "percentile_95": 0.1,
+        "percentile_99": 0.1
+      }
+    }
+  },
+  "system_info": {
+    "total_metrics": 10,
+    "alert_rules": 4,
+    "monitoring_active": true
+  }
+}

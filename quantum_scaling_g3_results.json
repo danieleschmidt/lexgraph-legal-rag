@@ -1,0 +1,42 @@
+{
+  "individual_results": [
+    {
+      "document": "Simple contract",
+      "length": 42,
+      "processing_time": 0.12316274642944336,
+      "quality": 0.8297520762616291,
+      "quantum_coherence": 0.0,
+      "efficiency": 6.7370377838803055,
+      "worker_id": "5"
+    },
+    {
+      "document": "Complex legal document",
+      "length": 1524,
+      "processing_time": 0.14037466049194336,
+      "quality": 0.9188721487978642,
+      "quantum_coherence": 0.0,
+      "efficiency": 6.545854825776065,
+      "worker_id": "2"
+    },
+    {
+      "document": "Research document",
+      "length": 1725,
+      "processing_time": 0.16253328323364258,
+      "quality": 0.833529185168964,
+      "quantum_coherence": 0.0,
+      "efficiency": 5.1283599800956505,
+      "worker_id": "4"
+    }
+  ],
+  "batch_performance": {
+    "documents_processed": 8,
+    "total_time": 0.12831854820251465,
+    "average_time_per_doc": 0.01603981852531433
+  },
+  "system_status": {
+    "timestamp": "2025-08-26T05:35:21.343181",
+    "system_health": 165.9096332944755,
+    "optimization_active": true,
+    "scaling_enabled": true,
+    "resource_pools": {
+      

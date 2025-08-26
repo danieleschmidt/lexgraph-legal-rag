@@ -1,0 +1,40 @@
+{
+  "timestamp": "2025-08-26T05:30:10.321300",
+  "system_status": "active",
+  "total_users": 3,
+  "active_sessions": 2,
+  "blocked_ips": 0,
+  "security_summary": {
+    "period_hours": 24,
+    "total_events": 4,
+    "blocked_events": 1,
+    "event_types": {
+      "login_success": 2,
+      "login_failure": 1,
+      "unauthorized_access": 1
+    },
+    "threat_levels": {
+      "low": 2,
+      "medium": 1,
+      "high": 1
+    },
+    "top_ips": [
+      {
+        "ip": "192.168.1.101",
+        "count": 1
+      }
+    ],
+    "top_resources": [
+      {
+        "resource": "/auth/login",
+        "count": 3
+      },
+      {
+        "resource": "/api/admin",
+        "count": 1
+      }
+    ]
+  },
+  "threat_detection_rules": 3,
+  "authorization_roles": 4
+}
