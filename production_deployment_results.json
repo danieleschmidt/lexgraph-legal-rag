@@ -1,0 +1,84 @@
+{
+  "deployment_report": {
+    "generated_at": "2025-08-27T21:16:31.722963",
+    "total_deployments": 3,
+    "successful_deployments": 3,
+    "failed_deployments": 0,
+    "rolled_back_deployments": 0,
+    "deployments": [
+      {
+        "deployment_id": "deploy-development-1756329368",
+        "environment": "development",
+        "status": "deployed",
+        "start_time": "2025-08-27T21:16:08.114081",
+        "end_time": "2025-08-27T21:16:16.181749",
+        "execution_time": 8.067668,
+        "services_deployed": [
+          "artifacts-generated",
+          "build-completed",
+          "update-service-1",
+          "update-service-2",
+          "update-service-3"
+        ],
+        "health_check_results": {
+          "api_health": true,
+          "database_connection": true,
+          "quality_gates_functional": true,
+          "monitoring_available": false
+        },
+        "error_message": null,
+        "deployed_version": "v1.0.0"
+      },
+      {
+        "deployment_id": "deploy-staging-1756329376",
+        "environment": "staging",
+        "status": "deployed",
+        "start_time": "2025-08-27T21:16:16.181871",
+        "end_time": "2025-08-27T21:16:24.201051",
+        "execution_time": 8.01918,
+        "services_deployed": [
+          "artifacts-generated",
+          "build-completed",
+          "green-environment",
+          "traffic-switch",
+          "prometheus",
+          "grafana",
+          "alertmanager"
+        ],
+        "health_check_results": {
+          "api_health": true,
+          "database_connection": true,
+          "quality_gates_functional": true,
+          "monitoring_available": true
+        },
+        "error_message": null,
+        "deployed_version": "v1.0.0"
+      },
+      {
+        "deployment_id": "deploy-production-1756329384",
+        "environment": "production",
+        "status": "deployed",
+        "start_time": "2025-08-27T21:16:24.201177",
+        "end_time": "2025-08-27T21:16:31.722930",
+        "execution_time": 7.521753,
+        "services_deployed": [
+          "artifacts-generated",
+          "build-completed",
+          "canary-deployment",
+          "traffic-split",
+          "prometheus",
+          "grafana",
+          "alertmanager"
+        ],
+        "health_check_results": {
+          "api_health": true,
+          "database_connection": true,
+          "quality_gates_functional": true,
+          "monitoring_available": true
+        },
+        "error_message": null,
+        "deployed_version": "v1.0.0"
+      }
+    ]
+  }
+}
