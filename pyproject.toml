@@ -37,7 +37,7 @@ classifiers = [
 ]
 dependencies = [
     "scikit-learn==1.7.0",
-    "fastapi==0.116.1",
+    "fastapi==0.118.0",
     "httpx==0.28.1",
     "faiss-cpu==1.12.0",
     "structlog==25.4.0",
