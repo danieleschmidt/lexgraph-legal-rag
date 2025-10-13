@@ -1,5 +1,5 @@
 # Production Dockerfile for Progressive Quality Gates
-FROM python:3.12-slim as builder
+FROM python:3.14-slim as builder
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -12,7 +12,7 @@ COPY requirements.txt /tmp/
 RUN pip install --no-cache-dir --user -r /tmp/requirements.txt
 
 # Production stage
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
