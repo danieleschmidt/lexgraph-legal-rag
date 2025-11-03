@@ -13,7 +13,7 @@ scikit-learn>=1.7.0,<1.8.0
 faiss-cpu>=1.11.0,<1.13.0
 
 # Logging and Monitoring
-structlog>=24.1.0,<25.0.0
+structlog>=24.1.0,<26.0.0
 prometheus-client>=0.20.0,<0.21.0
 
 # System Monitoring
